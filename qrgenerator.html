@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling/lib/qr-code-styling.min.js"></script>
+</head>
+<body class="bg-gray-900 flex justify-center items-center min-h-screen text-white">
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-[400px]">
+        <h2 class="text-2xl font-bold text-green-400 mb-4">QR Code Generator</h2>
+
+        <!-- URL Invoer -->
+        <input type="text" id="url" placeholder="Voer de URL in..." 
+            class="w-full p-3 text-gray-900 rounded-md focus:ring-2 focus:ring-green-400 outline-none mb-4"
+            oninput="updateQRCode()">
+
+        <!-- QR Code Container -->
+        <div id="qr-container" class="bg-white p-4 rounded-lg shadow-md mx-auto flex justify-center items-center"
+            style="width: 350px; height: 350px;">
+            <div id="qr-code" style="width: 300px; height: 300px;"></div>
+        </div>
+
+        <!-- Kleurkiezer en Formaat -->
+        <div class="mt-4 flex space-x-2 items-center">
+            <label class="flex items-center space-x-2 bg-gray-700 p-2 rounded-md w-full">
+                <span class="text-white text-sm">Kleur:</span>
+                <input type="text" id="hexInput" value="#000000"
+                    class="p-2 w-full rounded-md bg-gray-900 text-white text-center focus:ring-2 focus:ring-green-400 outline-none"
+                    oninput="updateQRCode()" placeholder="#000000">
+                <input type="color" id="color" value="#000000"
+                    class="w-10 h-10 border-none bg-gray-700 cursor-pointer"
+                    oninput="updateQRCode()">
+            </label>
+        </div>
+
+        <!-- QR Stijl en Formaat -->
+        <div class="mt-4 flex space-x-2">
+            <select id="style" class="w-1/2 p-2 rounded-md bg-gray-700 text-white" onchange="updateQRCode()">
+                <option value="rounded" selected>Rond</option>
+                <option value="square">Vierkant</option>
+            </select>
+            
+            <select id="size" class="w-1/2 p-2 rounded-md bg-gray-700 text-white" onchange="updateQRCode()">
+                <option value="250">250x250</option>
+                <option value="500" selected>500x500</option>
+                <option value="750">750x750</option>
+                <option value="1000">1000x1000</option>
+            </select>
+        </div>
+
+        <!-- Logo Upload -->
+        <div class="mt-4 w-full flex items-center justify-between bg-gray-700 text-white p-3 rounded-md">
+            <label id="logo-label" class="cursor-pointer">
+                Kies een logo
+                <input type="file" id="logo" accept="image/*" class="hidden" onchange="handleLogoUpload()">
+            </label>
+            <span id="remove-logo" class="hidden text-red-400 cursor-pointer ml-2" onclick="removeLogo()">❌</span>
+        </div>
+
+        <!-- Download Knoppen -->
+        <div class="mt-6 flex space-x-2">
+            <button onclick="promptDownload('png')" class="w-1/2 bg-green-400 text-gray-900 p-3 rounded-md font-bold hover:bg-green-500 transition">
+                Download PNG
+            </button>
+            <button onclick="promptDownload('svg')" class="w-1/2 bg-green-400 text-gray-900 p-3 rounded-md font-bold hover:bg-green-500 transition">
+                Download SVG
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let qrCode;
+        let logoUrl = null; // Blijft altijd behouden
+
+        function updateQRCode() {
+            const url = document.getElementById('url').value || "https://voorbeeld.nl";
+            const color = document.getElementById('color').value;
+            const size = 300;
+            const style = document.getElementById('style').value;
+
+            if (qrCode) {
+                document.getElementById('qr-code').innerHTML = "";
+            }
+
+            qrCode = new QRCodeStyling({
+                width: size,
+                height: size,
+                data: url,
+                dotsOptions: {
+                    color: color,
+                    type: style === "rounded" ? "rounded" : "square"
+                },
+                cornersSquareOptions: {
+                    type: style === "rounded" ? "rounded" : "square"
+                },
+                backgroundOptions: {
+                    color: "#ffffff"
+                },
+                image: logoUrl,
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 5,
+                    imageSize: 0.25
+                }
+            });
+
+            qrCode.append(document.getElementById("qr-code"));
+        }
+
+        function handleLogoUpload() {
+            const logoInput = document.getElementById("logo");
+            const logoLabel = document.getElementById("logo-label");
+            const removeLogoBtn = document.getElementById("remove-logo");
+
+            if (logoInput.files.length > 0) {
+                const file = logoInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    logoUrl = e.target.result; // Nu blijft het behouden
+                    updateQRCode();
+                    logoLabel.textContent = file.name;
+                    removeLogoBtn.classList.remove("hidden");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeLogo() {
+            logoUrl = null; // Echt verwijderen
+            document.getElementById("logo").value = ""; // Input resetten
+            document.getElementById("logo-label").textContent = "Kies een logo";
+            document.getElementById("remove-logo").classList.add("hidden");
+            updateQRCode();
+        }
+
+        function promptDownload(format) {
+            let filename = prompt("Geef een bestandsnaam op:", "qr-code");
+            if (filename) {
+                let size = parseInt(document.getElementById('size').value);
+                let exportQRCode = new QRCodeStyling({
+                    width: size,
+                    height: size,
+                    data: document.getElementById('url').value,
+                    dotsOptions: { color: document.getElementById('color').value, type: "rounded" },
+                    backgroundOptions: { color: "#ffffff" },
+                    image: logoUrl,
+                    imageOptions: { crossOrigin: "anonymous", margin: 5, imageSize: 0.25 }
+                });
+
+                exportQRCode.download({ name: filename, extension: format });
+            }
+        }
+
+        updateQRCode();
+    </script>
+
+</body>
+</html>
