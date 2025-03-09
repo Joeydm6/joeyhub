@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factuur Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-900 flex justify-center items-center min-h-screen text-white">
+    <script src="factuur.js"></script>
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-[600px]">
+        <h2 class="text-2xl font-bold text-green-400 mb-4">Factuur Generator</h2>
+
+        <!-- Dummy Gegevens Knop -->
+        <button onclick="vulDummyGegevens()" class="w-full bg-yellow-400 text-gray-900 p-3 rounded-md mb-4">
+            Vul Dummy Gegevens in
+        </button>
+
+        <!-- Invoervelden voor klantgegevens -->
+        <input type="text" id="naam" placeholder="Naam klant" class="w-full p-3 mb-2 text-gray-900 rounded-md">
+        <input type="text" id="adres" placeholder="Adres klant" class="w-full p-3 mb-2 text-gray-900 rounded-md">
+        <input type="text" id="postcode" placeholder="Postcode klant" class="w-full p-3 mb-2 text-gray-900 rounded-md">
+        <input type="text" id="woonplaats" placeholder="Woonplaats klant" class="w-full p-3 mb-2 text-gray-900 rounded-md">
+        <input type="text" id="factuurnummer" placeholder="Factuurnummer" class="w-full p-3 mb-2 text-gray-900 rounded-md">
+        <input type="date" id="datum" class="w-full p-3 mb-4 text-gray-900 rounded-md">
+
+        <!-- Tabel voor producten/diensten -->
+        <table class="w-full text-white mb-4 border border-gray-700">
+            <thead>
+                <tr class="bg-gray-700">
+                    <th class="p-2 border border-gray-600">Beschrijving</th>
+                    <th class="p-2 border border-gray-600">Prijs</th>
+                    <th class="p-2 border border-gray-600">Aantal</th>
+                    <th class="p-2 border border-gray-600">Verwijder</th>
+                </tr>
+            </thead>
+            <tbody id="factuur-items">
+            </tbody>
+        </table>
+
+        <!-- Knop om items toe te voegen -->
+        <button onclick="voegItemToe()" class="w-full bg-green-400 text-gray-900 p-3 rounded-md mb-4">+ Voeg product/dienst toe</button>
+
+        <!-- Totale kosten -->
+        <div class="text-right mb-4">
+            <p>Subtotaal: <span id="subtotaal">0.00</span> EUR</p>
+            <p>BTW (21%): <span id="btw">0.00</span> EUR</p>
+            <p class="text-xl font-bold">Totaal: <span id="totaal">0.00</span> EUR</p>
+        </div>
+
+        <!-- Download knop -->
+        <button onclick="genereerPDF()" class="w-full bg-blue-500 text-white p-3 rounded-md">Download Factuur als PDF</button>
+    </div>
+
+    <script>
+        function vulDummyGegevens() {
+            document.getElementById("naam").value = "Klasse Software & Development";
+            document.getElementById("adres").value = "Kerkenbos 1039C";
+            document.getElementById("postcode").value = "6546BB";
+            document.getElementById("woonplaats").value = "Nijmegen";
+            document.getElementById("factuurnummer").value = "2025-20032";
+            document.getElementById("datum").value = "2025-09-03";
+
+            document.getElementById("factuur-items").innerHTML = "";
+            voegItemMetData("Opmaak logo", 85, 1);
+            voegItemMetData("Opmaak magazine", 130, 1);
+        }
+
+        function voegItemToe() {
+            voegItemMetData("", 0, 1);
+        }
+
+        function voegItemMetData(beschrijving, prijs, aantal) {
+            const table = document.getElementById("factuur-items");
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td class="p-2 border border-gray-600"><input type="text" class="w-full p-2 text-gray-900 rounded-md" value="${beschrijving}"></td>
+                <td class="p-2 border border-gray-600"><input type="number" class="w-full p-2 text-gray-900 rounded-md prijs" value="${prijs}" oninput="updateTotaal()"></td>
+                <td class="p-2 border border-gray-600"><input type="number" class="w-full p-2 text-gray-900 rounded-md aantal" value="${aantal}" min="1" oninput="updateTotaal()"></td>
+                <td class="p-2 border border-gray-600 text-center"><button onclick="verwijderItem(this)" class="bg-red-500 text-white p-2 rounded-md">❌</button></td>
+            `;
+            table.appendChild(row);
+            updateTotaal();
+        }
+
+        function verwijderItem(button) {
+            button.parentElement.parentElement.remove();
+            updateTotaal();
+        }
+
+        function updateTotaal() {
+            let subtotaal = 0;
+            document.querySelectorAll("#factuur-items tr").forEach(row => {
+                const prijs = parseFloat(row.querySelector(".prijs")?.value || 0);
+                const aantal = parseInt(row.querySelector(".aantal")?.value || 1);
+                subtotaal += prijs * aantal;
+            });
+
+            const btw = subtotaal * 0.21;
+            const totaal = subtotaal + btw;
+
+            document.getElementById("subtotaal").innerText = subtotaal.toFixed(2);
+            document.getElementById("btw").innerText = btw.toFixed(2);
+            document.getElementById("totaal").innerText = totaal.toFixed(2);
+        }
+
+    </script>
+
+</body>
+</html>
