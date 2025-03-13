@@ -14,10 +14,12 @@
             <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
             <nav>
                 <ul class="flex space-x-6">
-                    <li><a href="index.html" class="hover:text-green-400">Home</a></li>
-                    <li><a href="qrgenerator.html" class="hover:text-green-400">QR Generator</a></li>
-                    <li><a href="factuur.html" class="hover:text-green-400">Facturatie Tool</a></li>
-                    <li><a href="contact.html" class="hover:text-green-400">Contact</a></li>
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
+                    <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
+                    <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
+                    <li><a href="spintaxchecker.html" class="hover:text-green-400">Spintax Checker</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
         </div>
@@ -33,31 +35,22 @@
     <section id="tools" class="container mx-auto px-4 py-12">
         <h2 class="text-3xl font-bold text-center mb-6">Beschikbare Tools</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <!-- QR Code Generator -->
             <a href="qrgenerator.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
                 <h3 class="text-xl font-semibold text-green-400">QR Code Generator</h3>
                 <p class="text-gray-300 mt-2">Maak eenvoudig QR-codes van elke tekst of URL.</p>
             </a>
-
-            <!-- Midjourney Prompt Generator -->
-            <a href="midjourney.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">Midjourney Prompt Generator</h3>
-                <p class="text-gray-300 mt-2">Genereer creatieve AI-prompts voor Midjourney.</p>
-            </a>
-
-            <!-- Spintax Checker -->
-            <a href="spintax.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">Spintax Checker</h3>
-                <p class="text-gray-300 mt-2">Controleer en test Spintax-teksten eenvoudig.</p>
-            </a>
-
-            <!-- Facturatie Tool -->
             <a href="factuur.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
                 <h3 class="text-xl font-semibold text-green-400">Facturatie Tool</h3>
                 <p class="text-gray-300 mt-2">Maak en download professionele facturen.</p>
             </a>
-
+            <a href="weetjes.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
+                <h3 class="text-xl font-semibold text-green-400">Weetjes Tool</h3>
+                <p class="text-gray-300 mt-2">Ontvang interessante weetjes.</p>
+            </a>
+            <a href="spintaxchecker.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
+                <h3 class="text-xl font-semibold text-green-400">Spintax Checker</h3>
+                <p class="text-gray-300 mt-2">Analyseer spintax variaties en woorden.</p>
+            </a>
         </div>
     </section>
 
@@ -71,16 +64,5 @@
     <footer class="bg-gray-900 text-center py-4">
         <p class="text-gray-400">© 2025 Joey's hub. Alle rechten voorbehouden.</p>
     </footer>
-
-    <!-- Script om menu in te laden -->
-    <script>
-        fetch("menu.html")
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("menu-container").innerHTML = data;
-            })
-            .catch(error => console.error("Fout bij het laden van het menu:", error));
-    </script>
-
 </body>
 </html>

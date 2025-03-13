@@ -1,0 +1,124 @@
+<!-- weetjes.html -->
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weetjes Tool – Joey's Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Navigatie -->
+  <header class="bg-gray-800 shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
+      <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
+        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+      </button>
+      <nav id="menu" class="hidden md:flex md:items-center space-x-6">
+        <ul class="flex flex-col md:flex-row md:space-x-6 w-full md:w-auto 
+                   bg-gray-800 md:bg-transparent absolute md:relative top-16 left-0 
+                   md:top-0 md:left-auto md:flex">
+                   <li><a href="index.html" class="nav-link">Home</a></li>
+                   <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
+                   <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
+                   <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
+                   <li><a href="spintaxchecker.html" class="nav-link">Spintax Checker</a></li>
+                   <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Weetjes sectie -->
+  <section class="text-center py-20 px-4 bg-gradient-to-r from-gray-800 to-gray-700">
+    <h2 class="text-4xl font-extrabold">Weetjes Tool</h2>
+    <p class="mt-4 text-lg text-gray-300">Klik op de knop voor een leuk weetje!</p>
+    <button onclick="toonWeetje()" class="mt-6 bg-green-500 px-6 py-3 rounded-lg shadow-md text-white font-bold hover:bg-green-400 transition">
+      Geef mij een weetje!
+    </button>
+    <p id="weetje" class="mt-6 text-xl text-green-400 font-semibold"></p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-center py-4">
+    <p class="text-gray-400">© 2025 Joey's Hub. Alle rechten voorbehouden.</p>
+  </footer>
+
+  <!-- Weetjes script + menu script -->
+  <script>
+    const weetjes = [
+      "Een octopus heeft drie harten.",
+      "Honing bederft nooit.",
+      "Een slak kan drie jaar slapen.",
+      "Bananen zijn bessen, maar aardbeien niet.",
+      "Water kan gelijktijdig bevriezen én koken bij 0,01°C (triple point).",
+      "Er zijn meer sterren in het heelal dan zandkorrels op aarde.",
+      "De tong van een blauwe vinvis weegt evenveel als een volwassen olifant.",
+      "Katten hebben een rudimentaire extra teen, vergelijkbaar met een menselijke duim.",
+      "Bliksem is vijf keer heter dan het oppervlak van de zon.",
+      "Een groep flamingo's heet een 'flamboyance'.",
+      "Het hart van een garnaal zit in zijn hoofd.",
+      "Krokodillen kunnen hun tong niet uitsteken.",
+      "Onder de witte vacht van een ijsbeer is zijn huid zwart.",
+      "De Mona Lisa heeft geen wenkbrauwen.",
+      "Menselijk bot is sterker dan beton (per gewichtseenheid).",
+      "Een nies kan een snelheid van 160 km/u bereiken.",
+      "De kleinste vogel is de bijenkolibrie (ca. 5 cm).",
+      "Zonlicht duurt ~8 minuten en 20 sec om de aarde te bereiken.",
+      "Mieren slapen niet zoals mensen; ze hebben korte rustperiodes.",
+      "Onder water huilen is onmogelijk; tranen mengen meteen met het water.",
+      "Haaien hebben geen botten, alleen kraakbeen.",
+      "De eerste e-mail ooit werd in 1971 verstuurd.",
+      "Slakken hebben meer dan 14.000 tanden.",
+      "Volwassen mensen hebben ~206 botten, baby's ~300 bij geboorte.",
+      "Een muis past door een opening zo groot als een potlood.",
+      "Het hart van een kolibrie kan 1.200 keer per minuut kloppen.",
+      "Alle pinguïns leven op het zuidelijk halfrond.",
+      "De meeste lippenstiften bevatten vissenschubben.",
+      "Een konijn kan niet zoals een mens zijn nek draaien.",
+      "Dolfijnen houden half hun hersenen wakker tijdens het slapen.",
+      "Het echo van het geluid van een eend is niet hoorbaar.",
+      "Met één potlood kun je een lijn van ~56 km tekenen.",
+      "Het Empire State Building wordt jaarlijks vaak door bliksem getroffen.",
+      "De kleinste volwassen kat weegt slechts ~1,2 kg.",
+      "Goud is uit zeewater te winnen, maar niet rendabel.",
+      "Een mens verliest ~100 haren per dag.",
+      "Een kaars brandt sneller op grote hoogte.",
+      "Ieders tongafdruk is uniek, net als vingerafdrukken.",
+      "Sommige vissen kunnen achteruit zwemmen.",
+      "De kortste oorlog duurde ~38 minuten (Anglo-Zanzibar oorlog, 1896).",
+      "Spinnen eten hun eigen web op om het materiaal te hergebruiken.",
+      "De aarde draait ~1.670 km/u rond haar as.",
+      "In je mond zitten meer bacteriën dan er mensen op aarde zijn.",
+      "De geur van vers gras is een stressreactie van het gras.",
+      "De maan lijkt even groot als de zon omdat hij 400x kleiner én 400x dichterbij is.",
+      "Een haai kan 1 druppel bloed ruiken in 25 miljoen liter water.",
+      "De eerste website ooit (1991) is nog steeds online.",
+      "Tranen bevatten een natuurlijke pijnstiller.",
+      "Een komkommer bestaat voor ~95% uit water.",
+      "Het nationale dier van Schotland is een eenhoorn."
+    ];
+    function toonWeetje() {
+      const idx = Math.floor(Math.random() * weetjes.length);
+      document.getElementById("weetje").innerText = weetjes[idx];
+    }
+    // Menu functionaliteit
+    document.getElementById("menu-toggle").addEventListener("click", () => {
+      document.getElementById("menu").classList.toggle("hidden");
+    });
+    document.querySelectorAll(".nav-link").forEach(link => {
+      if (link.href === window.location.href) {
+        link.classList.add("text-green-400", "font-bold");
+      }
+    });
+  </script>
+  <style>
+    .nav-link { display: block; padding: 10px 20px; color: white; text-decoration: none; transition: color 0.3s; }
+    .nav-link:hover { color: #68D391; }
+  </style>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spintax Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-green-400">Spintax Checker</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
+                    <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
+                    <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
+                    <li><a href="spintaxchecker.html" class="hover:text-green-400">Spintax Checker</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Spintax Invoer -->
+    <section class="container mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-center mb-6">Spintax Checker</h2>
+        <p class="text-center text-gray-400">Check spintax voor variaties.</p>
+        
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6">
+            <label for="spintaxInput" class="block text-lg font-semibold">Spintax:</label>
+            <textarea id="spintaxInput" class="w-full p-3 bg-gray-700 text-white rounded mt-2" rows="6"></textarea>
+            
+            <button onclick="checkSpintax()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-4">Check Spintax</button>
+        </div>
+    </section>
+
+    <!-- Spintax Resultaat -->
+    <section class="container mx-auto px-4 py-12">
+        <div id="result" class="bg-gray-800 p-6 rounded-lg shadow-md hidden">
+            <h3 class="text-xl font-bold text-green-400">Resultaat</h3>
+            <p class="mt-2"><strong>Voorbeeld:</strong></p>
+            <p id="exampleOutput" class="bg-gray-700 p-3 rounded text-white mt-2"></p>
+            <p class="mt-4"><strong>Aantal variaties:</strong> <span id="variationCount">0</span></p>
+            <p><strong>Aantal woorden in variaties:</strong> <span id="wordCount">0</span></p>
+        </div>
+    </section>
+
+    <script>
+        function parseSpintax(text) {
+            return text.replace(/\{([^{}]+)\}/g, function(match, options) {
+                var choices = options.split("|");
+                return choices[Math.floor(Math.random() * choices.length)];
+            });
+        }
+
+        function countVariations(text) {
+            let match;
+            let regex = /\{([^{}]+)\}/g;
+            let totalVariations = 1;
+            while ((match = regex.exec(text)) !== null) {
+                let choices = match[1].split("|");
+                totalVariations *= choices.length;
+            }
+            return totalVariations;
+        }
+
+        function countWords(text) {
+            return text.split(/\s+/).filter(word => word.length > 0).length;
+        }
+
+        function checkSpintax() {
+            const inputText = document.getElementById("spintaxInput").value;
+            if (!inputText.trim()) {
+                alert("Voer spintax tekst in.");
+                return;
+            }
+
+            // Genereer een voorbeeldzin
+            const example = parseSpintax(inputText);
+            document.getElementById("exampleOutput").textContent = example;
+
+            // Bereken aantal variaties
+            const variations = countVariations(inputText);
+            document.getElementById("variationCount").textContent = variations;
+
+            // Tel woorden in de gegenereerde zin
+            const words = countWords(example);
+            document.getElementById("wordCount").textContent = words;
+
+            document.getElementById("result").classList.remove("hidden");
+        }
+    </script>
+
+</body>
+</html>
