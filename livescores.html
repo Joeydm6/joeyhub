@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Voetbal Scores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Navigatiebalk -->
+    <header class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="livescores.html" class="nav-link text-green-400 font-bold">Live Scores</a></li>
+                    <li><a href="qrgenerator.html" class="nav-link">QR Generator</a></li>
+                    <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
+                    <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Live Voetbal Scores -->
+    <section class="container mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-center mb-6">⚽ Live Voetbal Scores</h2>
+        <div id="liveFootballScores" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-center text-gray-400">Laden...</div>
+    </section>
+
+    <!-- Aankomende Wedstrijden -->
+    <section class="container mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-center mb-6">📅 Aankomende Voetbalwedstrijden</h2>
+        <div id="upcomingFootballGames" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-center text-gray-400">Laden...</div>
+    </section>
+
+    <!-- JavaScript API Calls -->
+    <script>
+        const apiKey = "JOUW_API_KEY"; // Zet hier je API Key van Football-Data.org
+        const apiUrl = "https://api.football-data.org/v4";
+
+        async function fetchLiveFootballScores() {
+            try {
+                const response = await fetch(`${apiUrl}/matches`, {
+                    method: "GET",
+                    headers: {
+                        "X-Auth-Token": apiKey
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Live scores:", data);
+
+                if (!data.matches || data.matches.length === 0) {
+                    throw new Error("Geen live wedstrijden gevonden.");
+                }
+
+                displayLiveFootballScores(data.matches);
+            } catch (error) {
+                console.error("⚠ Fout bij laden live scores:", error);
+                document.getElementById('liveFootballScores').innerHTML = `<p class="text-red-500">⚠ Live scores niet beschikbaar.</p>`;
+            }
+        }
+
+        function displayLiveFootballScores(games) {
+            const liveScoresDiv = document.getElementById('liveFootballScores');
+            liveScoresDiv.innerHTML = '';
+
+            games.forEach(game => {
+                const gameCard = `
+                    <div class="bg-gray-800 p-4 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-semibold">${game.homeTeam.name} vs ${game.awayTeam.name}</h3>
+                        <p class="mt-2 text-lg font-bold">⚽ ${game.score.fullTime.home ?? 0} - ${game.score.fullTime.away ?? 0}</p>
+                        <p class="text-sm text-gray-400">Status: ${game.status}</p>
+                    </div>
+                `;
+                liveScoresDiv.innerHTML += gameCard;
+            });
+        }
+
+        async function fetchUpcomingFootballGames() {
+            try {
+                const response = await fetch(`${apiUrl}/competitions/PL/matches?status=SCHEDULED`, {
+                    method: "GET",
+                    headers: {
+                        "X-Auth-Token": apiKey
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Upcoming matches:", data);
+
+                if (!data.matches || data.matches.length === 0) {
+                    throw new Error("Geen aankomende wedstrijden gevonden.");
+                }
+
+                displayUpcomingFootballGames(data.matches);
+            } catch (error) {
+                console.error("⚠ Fout bij laden aankomende wedstrijden:", error);
+                document.getElementById('upcomingFootballGames').innerHTML = `<p class="text-red-500">⚠ Aankomende wedstrijden niet beschikbaar.</p>`;
+            }
+        }
+
+        function displayUpcomingFootballGames(games) {
+            const upcomingDiv = document.getElementById('upcomingFootballGames');
+            upcomingDiv.innerHTML = '';
+
+            games.forEach(game => {
+                const gameCard = `
+                    <div class="bg-blue-800 p-4 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-semibold">${game.homeTeam.name} vs ${game.awayTeam.name}</h3>
+                        <p class="mt-2 text-sm">📅 ${new Date(game.utcDate).toLocaleDateString()}</p>
+                    </div>
+                `;
+                upcomingDiv.innerHTML += gameCard;
+            });
+        }
+
+        setInterval(fetchLiveFootballScores, 30000);
+        fetchLiveFootballScores();
+        fetchUpcomingFootballGames();
+    </script>
+</body>
+</html>
