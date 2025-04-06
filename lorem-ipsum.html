@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorem Ipsum Generator - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+       textarea {
+           resize: vertical;
+       }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+             <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end"></div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+
+        <h2 class="text-3xl font-bold text-center mb-2">Lorem Ipsum Generator</h2>
+        <p class="text-center text-gray-400 mb-6">Genereert Nederlandse dummytekst waarin een bedrijfsnaam verwerkt kan worden.</p>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6 max-w-3xl mx-auto">
+
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-end">
+                <div class="md:col-span-2">
+                    <label for="companyName" class="block text-sm font-medium text-gray-300 mb-1">Bedrijfsnaam (optioneel)</label>
+                    <input type="text" id="companyName" placeholder="Typ hier de bedrijfsnaam"
+                           class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+                 <div>
+                    <label for="numParagraphs" class="block text-sm font-medium text-gray-300 mb-1">Aantal Alinea's (max 4)</label>
+                    <input type="number" id="numParagraphs" value="3" min="1" max="4" class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none">
+                 </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <button id="generateButton" class="flex-1 bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-2 px-6 rounded transition duration-300">
+                    Genereer Tekst
+                </button>
+                <button id="copyButton" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 hidden">
+                    Kopieer naar Klembord
+                </button>
+            </div>
+             <p id="copyFeedback" class="text-sm text-center text-green-400 h-4 mb-2"></p> <div>
+                 <label for="outputLorem" class="block text-sm font-medium text-gray-300 mb-1">Gegenereerde Tekst</label>
+                 <textarea id="outputLorem" rows="12" readonly
+                           class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:outline-none"></textarea>
+             </div>
+
+        </div> </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // --- VASTE ALINEA'S DATABASE ---
+        // Gebruik [bedrijfsnaam] als placeholder
+        const paragraphs = [
+            "Dit is hoe een tekst op de website van [bedrijfsnaam] eruit kan zien. Gewoon even om te laten zien hoe het leest, hoe het oogt en hoe de blokken zich vullen met inhoud. Je leest dit nu als voorbeeld, maar straks staat hier natuurlijk echte content die helemaal past bij wat [bedrijfsnaam] te bieden heeft.",
+            "Op deze plek krijg je straks meer gevoel bij de sfeer, de toon en de boodschap van [bedrijfsnaam]. Voor nu is dit vooral bedoeld om te laten zien hoe een stuk tekst eruitziet in combinatie met het ontwerp. Niet te lang, niet te kort, precies goed om de ruimte op een natuurlijke manier op te vullen.",
+            "Je merkt misschien dat de zinnen logisch in elkaar overlopen en dat er wat afwisseling zit in lengte en ritme. Dat helpt straks ook als de echte teksten worden geschreven: het moet prettig lezen, zonder dat je afdwaalt.",
+            "Voor nu hoef je er verder niks mee te doen — deze tekst is er alleen maar om het geheel wat meer leven te geven. Straks wordt hij vervangen door iets wat echt raakt, iets wat klopt. Maar dit werkt alvast prima als tussenstap."
+        ];
+
+        // --- Element Referenties --- (worden gevuld in DOMContentLoaded)
+        let companyNameInput, numParagraphsInput, generateButton, outputLoremTextarea, copyButton, copyFeedbackP;
+
+        // --- AANGEPASTE GENERATOR FUNCTIE ---
+        function generateLoremIpsum() {
+            const companyName = companyNameInput.value.trim() || "uw bedrijf"; // Default naam
+            let numParagraphs = parseInt(numParagraphsInput.value) || 1; // Default 1 bij fout
+
+            // Zorg dat het aantal binnen 1-4 blijft
+            numParagraphs = Math.max(1, Math.min(numParagraphs, 4));
+            numParagraphsInput.value = numParagraphs; // Update input veld als waarde buiten bereik was
+
+            let resultText = "";
+
+            // Selecteer de eerste 'numParagraphs' alinea's uit de array
+            const selectedParagraphs = paragraphs.slice(0, numParagraphs);
+
+            // Vervang placeholder in elke geselecteerde alinea en voeg samen
+            resultText = selectedParagraphs
+                .map(p => p.replaceAll("[bedrijfsnaam]", companyName)) // Vervang placeholder
+                .join("\n\n"); // Voeg samen met dubbele newline
+
+            outputLoremTextarea.value = resultText; // Zet tekst in textarea
+            if (copyButton) copyButton.classList.remove('hidden'); // Maak kopieerknop zichtbaar
+            if (copyFeedbackP) copyFeedbackP.textContent = ''; // Reset feedback
+        }
+
+        // --- Kopieer Functie (ongewijzigd) ---
+        function copyToClipboard() {
+            if (!navigator.clipboard) {
+                try {
+                    outputLoremTextarea.select(); document.execCommand('copy');
+                    if (copyFeedbackP) copyFeedbackP.textContent = 'Tekst gekopieerd (fallback)!';
+                 } catch (err) { console.error('Fallback copy failed', err); if (copyFeedbackP) copyFeedbackP.textContent = 'Kopiëren mislukt.'; } return; }
+            navigator.clipboard.writeText(outputLoremTextarea.value).then(() => {
+                 if (copyButton) { const originalText = copyButton.textContent; copyButton.textContent = 'Gekopieerd!'; copyButton.disabled = true; if (copyFeedbackP) copyFeedbackP.textContent = '';
+                      setTimeout(() => { copyButton.textContent = originalText; copyButton.disabled = false; }, 1500); }
+             }).catch(err => { console.error('Async: Could not copy text: ', err); if (copyFeedbackP) copyFeedbackP.textContent = 'Kopiëren mislukt.'; alert('Kon de tekst niet naar het klembord kopiëren.'); });
+        }
+
+        // --- Initialisatie en Event Listeners (ongewijzigd) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            companyNameInput = document.getElementById('companyName');
+            numParagraphsInput = document.getElementById('numParagraphs');
+            generateButton = document.getElementById('generateButton');
+            outputLoremTextarea = document.getElementById('outputLorem');
+            copyButton = document.getElementById('copyButton');
+            copyFeedbackP = document.getElementById('copyFeedback');
+            if (!companyNameInput || !numParagraphsInput || !generateButton || !outputLoremTextarea || !copyButton || !copyFeedbackP) { console.error("Elementen voor Lorem Ipsum generator niet gevonden!"); return; }
+            generateButton.addEventListener('click', generateLoremIpsum);
+            copyButton.addEventListener('click', copyToClipboard);
+            const yearSpan = document.getElementById('current-year');
+            if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+            // Optioneel: genereer meteen bij laden?
+            // generateLoremIpsum();
+         });
+    </script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>

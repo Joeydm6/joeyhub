@@ -3,97 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spintax Checker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Spintax Checker - Joey's Hub</title> <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+        /* Extra stijl voor resultaat gebied */
+        #result p { margin-bottom: 0.5rem; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-gray-800 shadow-lg">
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-green-400">Spintax Checker</h1>
-            <nav>
-                <ul class="flex space-x-6">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
-                    <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
-                    <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
-                    <li><a href="spintaxchecker.html" class="hover:text-green-400">Spintax Checker</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact</a></li>
-                </ul>
-            </nav>
+            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+             <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end">
+                 </div>
         </div>
     </header>
 
-    <!-- Spintax Invoer -->
-    <section class="container mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold text-center mb-6">Spintax Checker</h2>
-        <p class="text-center text-gray-400">Check spintax voor variaties.</p>
-        
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6">
-            <label for="spintaxInput" class="block text-lg font-semibold">Spintax:</label>
-            <textarea id="spintaxInput" class="w-full p-3 bg-gray-700 text-white rounded mt-2" rows="6"></textarea>
-            
-            <button onclick="checkSpintax()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-4">Check Spintax</button>
-        </div>
-    </section>
+    <main class="flex-grow container mx-auto px-4 py-12">
 
-    <!-- Spintax Resultaat -->
-    <section class="container mx-auto px-4 py-12">
-        <div id="result" class="bg-gray-800 p-6 rounded-lg shadow-md hidden">
-            <h3 class="text-xl font-bold text-green-400">Resultaat</h3>
-            <p class="mt-2"><strong>Voorbeeld:</strong></p>
-            <p id="exampleOutput" class="bg-gray-700 p-3 rounded text-white mt-2"></p>
-            <p class="mt-4"><strong>Aantal variaties:</strong> <span id="variationCount">0</span></p>
-            <p><strong>Aantal woorden in variaties:</strong> <span id="wordCount">0</span></p>
-        </div>
-    </section>
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-2">Spintax Checker</h2>
+            <p class="text-center text-gray-400 mb-6">Voer je spintax-tekst in en bekijk een voorbeeld en het aantal mogelijke variaties.</p>
+
+            <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6 max-w-3xl mx-auto"> <label for="spintaxInput" class="block text-lg font-semibold mb-2">Spintax Invoer:</label>
+                <textarea id="spintaxInput" class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none" rows="8" placeholder="{Hallo|Hoi} {wereld|universum}! Dit is {een test|een voorbeeld}."></textarea> <button id="checkButton" class="bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-2 px-6 rounded mt-4 transition duration-300">Check Spintax</button> </div>
+        </section>
+
+        <section class="mt-10"> <div id="result" class="bg-gray-800 p-6 rounded-lg shadow-md hidden max-w-3xl mx-auto"> <h3 class="text-xl font-bold text-green-400 mb-4">Resultaat</h3>
+                <div class="space-y-3"> <p><strong>Voorbeeld Uitvoer:</strong></p>
+                    <p id="exampleOutput" class="bg-gray-700 p-3 rounded text-white break-words"></p> <p><strong>Geschat aantal unieke variaties:</strong> <span id="variationCount" class="font-semibold text-yellow-400">0</span></p>
+                    <p><strong>Aantal woorden in dit voorbeeld:</strong> <span id="wordCount" class="font-semibold">0</span></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto"> <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
 
     <script>
+        // --- Spintax Functies ---
         function parseSpintax(text) {
-            return text.replace(/\{([^{}]+)\}/g, function(match, options) {
-                var choices = options.split("|");
-                return choices[Math.floor(Math.random() * choices.length)];
-            });
+            // Deze regex handelt nu ook geneste spintax correct af
+            const regex = /\{([^{}]*?)\}/;
+            while (regex.test(text)) {
+                text = text.replace(regex, (match, options) => {
+                    const choices = options.split("|");
+                    // Filter lege keuzes weg die kunnen ontstaan door || of | aan begin/eind
+                    const validChoices = choices.filter(choice => choice.length > 0 || choices.length === 1);
+                    if (validChoices.length === 0) return ''; // Geen geldige keuze over? Leeg teruggeven.
+                    return validChoices[Math.floor(Math.random() * validChoices.length)];
+                });
+            }
+            return text;
         }
 
         function countVariations(text) {
-            let match;
-            let regex = /\{([^{}]+)\}/g;
-            let totalVariations = 1;
-            while ((match = regex.exec(text)) !== null) {
-                let choices = match[1].split("|");
-                totalVariations *= choices.length;
-            }
-            return totalVariations;
+            // Let op: Dit is een benadering en wordt erg onnauwkeurig/groot bij geneste spintax.
+            // Een exacte telling vereist een complexere parser.
+             try {
+                let totalVariations = 1;
+                 // Deze regex is simpeler en telt alleen de top-level keuzes
+                 const regexSimple = /\{([^{}|]+(?:\|[^{}|]+)*)\}/g;
+                 let match;
+                 while ((match = regexSimple.exec(text)) !== null) {
+                     // Controleer of er daadwerkelijk een | in de match zit
+                     if (match[1].includes('|')) {
+                         let choices = match[1].split("|");
+                         // Filter lege keuzes
+                         const validChoices = choices.filter(choice => choice.length > 0 || choices.length === 1);
+                         if (validChoices.length > 1) { // Alleen vermenigvuldigen als er echte keuzes zijn
+                             totalVariations *= validChoices.length;
+                             // Beperk tot een maximum om performance problemen / Infinity te voorkomen
+                             if (totalVariations > 1e9) return Infinity;
+                         }
+                     }
+                 }
+                 // Zoek naar geneste structuren - dit maakt het een schatting
+                 if (/\{.*\{/.test(text)) {
+                      // Als er nesting is, kunnen we het niet simpel tellen, geef een indicatie
+                      return Infinity; // Of een andere indicatie zoals 'Veel (genest)'
+                  }
+
+                 return totalVariations;
+             } catch (e) {
+                 console.error("Error counting variations:", e);
+                 return NaN; // Geef NaN terug bij een fout
+             }
         }
 
+
         function countWords(text) {
+            if (!text) return 0;
+            // Telt woorden gescheiden door spaties, negeert lege strings na split
             return text.split(/\s+/).filter(word => word.length > 0).length;
         }
 
         function checkSpintax() {
             const inputText = document.getElementById("spintaxInput").value;
-            if (!inputText.trim()) {
-                alert("Voer spintax tekst in.");
-                return;
+            const resultDiv = document.getElementById("result");
+            const exampleOutputP = document.getElementById("exampleOutput");
+            const variationCountSpan = document.getElementById("variationCount");
+            const wordCountSpan = document.getElementById("wordCount");
+
+            // Basis validatie
+             if (!inputText || !inputText.trim()) {
+                 alert("Voer eerst spintax tekst in het invoerveld in.");
+                  resultDiv.classList.add("hidden"); // Verberg resultaat bij lege input
+                 return;
+             }
+
+             // Controleer op syntax fouten (simpele check op ongebalanceerde haken)
+             if ((inputText.match(/\{/g) || []).length !== (inputText.match(/\}/g) || []).length) {
+                 alert("Syntaxfout gedetecteerd: Het aantal openingshaken { komt niet overeen met het aantal sluitingshaken }.");
+                 resultDiv.classList.add("hidden");
+                 return;
+             }
+             // Simpele check op lege {} blokken
+            if (/\{\s*\}/.test(inputText)) {
+                 alert("Syntaxfout gedetecteerd: Lege {} blokken zijn niet toegestaan.");
+                 resultDiv.classList.add("hidden");
+                 return;
             }
+             // Simpele check op geneste haken zonder pipe | (kan valide zijn, maar ook fout)
+             if (/\{[^{}]*\{/.test(inputText)) {
+                  console.warn("Mogelijk geneste spintax zonder pipe gedetecteerd. De variatietelling is een schatting.");
+              }
 
-            // Genereer een voorbeeldzin
-            const example = parseSpintax(inputText);
-            document.getElementById("exampleOutput").textContent = example;
 
-            // Bereken aantal variaties
-            const variations = countVariations(inputText);
-            document.getElementById("variationCount").textContent = variations;
+            try {
+                // Genereer een voorbeeldzin
+                const example = parseSpintax(inputText);
+                exampleOutputP.textContent = example;
 
-            // Tel woorden in de gegenereerde zin
-            const words = countWords(example);
-            document.getElementById("wordCount").textContent = words;
+                // Bereken aantal variaties (benadering)
+                const variations = countVariations(inputText);
+                 if (variations === Infinity) {
+                      variationCountSpan.textContent = "Zeer veel (genest)";
+                  } else if (isNaN(variations)) {
+                      variationCountSpan.textContent = "Fout bij tellen";
+                  } else {
+                      variationCountSpan.textContent = variations.toLocaleString('nl-NL'); // Formatteer grote getallen
+                  }
 
-            document.getElementById("result").classList.remove("hidden");
+
+                // Tel woorden in de gegenereerde zin
+                const words = countWords(example);
+                wordCountSpan.textContent = words;
+
+                // Toon resultaat sectie
+                resultDiv.classList.remove("hidden");
+
+            } catch (error) {
+                 console.error("Fout tijdens Spintax verwerking:", error);
+                 alert("Er is een onverwachte fout opgetreden bij het verwerken van de spintax.");
+                 resultDiv.classList.add("hidden");
+            }
         }
+
+         // --- Initialisatie en Event Listeners ---
+         document.addEventListener('DOMContentLoaded', () => {
+             // Koppel de checkSpintax functie aan de knop
+             const checkButton = document.getElementById('checkButton');
+             if (checkButton) {
+                 checkButton.addEventListener('click', checkSpintax);
+             } else {
+                  console.error("Knop met ID 'checkButton' niet gevonden!");
+              }
+
+             // Dynamisch jaar in footer
+             const yearSpan = document.getElementById('current-year');
+             if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+         });
+
     </script>
+
+    <script src="main.js"></script>
 
 </body>
 </html>

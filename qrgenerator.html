@@ -1,326 +1,375 @@
-<!-- qrgenerator.html -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR Code Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- QRCodeStyling library voor QR code genereren -->
-  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling/lib/qr-code-styling.min.js"></script>
-  <!-- JSZip voor ZIP generatie -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- SheetJS (XLSX) voor Excel parsing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    #qr-container {
-        width: 300px;
-        height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-  
-    #qr-code canvas, #qr-code img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-  </style>  
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Generator - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active { color: #68D391 !important; font-weight: bold !important; }
+        /* Originele stijlen voor QR container behouden */
+        #qr-container { width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        #qr-code canvas, #qr-code img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #qr-loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
+        /* Stijlen voor color input */
+        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 2.5rem; height: 2.5rem; padding: 0; border: none; border-radius: 0.375rem; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 0.375rem; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.375rem; }
+        input[type="color"]::-moz-color-swatch { border: none; border-radius: 0.375rem; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-  <!-- Navigatie (zelfde structuur als elders) -->
-  <header class="bg-gray-800 shadow-lg">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
-      <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
-        <!-- (SVG icoon hamburger) -->
-        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16m-7 6h7" />
-        </svg>
-      </button>
-      <nav id="menu" class="hidden md:flex md:items-center space-x-6">
-        <ul class="flex flex-col md:flex-row md:space-x-6 w-full md:w-auto 
-                   bg-gray-800 md:bg-transparent absolute md:relative top-16 left-0 
-                   md:top-0 md:left-auto md:flex">
-          <li><a href="index.html" class="nav-link">Home</a></li>
-          <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
-          <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
-          <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
-          <li><a href="contact.html" class="nav-link">Contact</a></li>
-          <li><a href="spintaxchecker.html" class="hover:text-green-400">Spintax Checker</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-  <!-- QR Code Generator Interface -->
-  <div class="flex justify-center items-center min-h-screen p-4">
-    <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-full max-w-md">
-      <h2 class="text-2xl font-bold text-green-400 mb-4">QR Code Generator</h2>
-      
-      <!-- Invoerveld voor URL/tekst -->
-      <input type="text" id="url" placeholder="Voer de URL of tekst in..." 
-             class="w-full p-3 mb-4 text-gray-900 rounded-md focus:ring-2 focus:ring-green-400 outline-none"
-             oninput="updateQRCode()" />
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+             <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end"></div>
+        </div>
+    </header>
 
-      <!-- Optie: URL verkorten via TinyURL -->
-      <label class="flex items-center space-x-2 text-sm text-gray-200 mb-4">
-        <input type="checkbox" id="shorten-url" class="w-5 h-5 text-green-400 cursor-pointer" onchange="updateQRCode()" />
-        <span>Gebruik TinyURL verkorter</span>
-      </label>
+    <main class="flex-grow container mx-auto px-4 py-12"> <h2 class="text-3xl font-bold text-center mb-2">QR Code Generator</h2>
+        <p class="text-center text-gray-400 mb-6">Maak eenvoudig QR-codes voor URL's of tekst, met opties voor stijl en logo.</p>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-full max-w-md mx-auto mt-6"> <input type="text" id="url" placeholder="Voer de URL of tekst in..."
+                   class="w-full p-3 mb-4 text-gray-900 rounded-md focus:ring-2 focus:ring-green-400 outline-none border border-gray-600 bg-gray-200" />
 
-      <!-- QR Code weergave -->
-      <div id="qr-container" class="bg-white p-4 rounded-lg shadow-md mx-auto flex justify-center items-center"
-           style="width: 300px; height: 300px;">
-        <!-- Hierbinnen wordt de QR code geplaatst -->
-        <div id="qr-code" style="width: 250px; height: 250px;"></div>
-      </div>
+            <label class="flex items-center justify-center space-x-2 text-sm text-gray-200 mb-4 cursor-pointer">
+                <input type="checkbox" id="shorten-url" class="w-5 h-5 text-green-400 cursor-pointer rounded focus:ring-green-500 border-gray-500 bg-gray-700" />
+                <span>Gebruik TinyURL verkorter (alleen voor URLs)</span>
+            </label>
 
-      <!-- Kleurkiezer voor QR code kleur -->
-      <div class="mt-4 flex items-center justify-center space-x-2">
-        <span class="text-sm">Kleur:</span>
-        <input type="text" id="hexInput" value="#000000"
-               class="p-2 w-24 text-center rounded-md bg-gray-700 text-white focus:ring-2 focus:ring-green-400 outline-none"
-               oninput="updateColorPicker()" />
-        <input type="color" id="color" value="#000000"
-               class="w-10 h-10 cursor-pointer bg-gray-700 border-none" 
-               oninput="updateColorInput()" />
-      </div>
+            <div id="qr-container" class="bg-white p-4 rounded-lg shadow-inner mx-auto flex justify-center items-center mb-6">
+                <div id="qr-code" style="width: 250px; height: 250px;"></div>
+                <p id="qr-loading" class="text-gray-500 hidden">Laden...</p>
+            </div>
 
-      <!-- Vorm/stijl en grootte opties -->
-      <div class="mt-4 flex space-x-2 justify-center">
-        <select id="style" class="w-1/2 p-2 rounded-md bg-gray-700 text-white" onchange="updateQRCode()">
-          <option value="rounded" selected>Ronde punten</option>
-          <option value="square">Vierkante punten</option>
-        </select>
-        <select id="size" class="w-1/2 p-2 rounded-md bg-gray-700 text-white" onchange="updateQRCode()">
-          <option value="250">250x250</option>
-          <option value="300" selected>300x300</option>
-          <option value="500">500x500</option>
-          <option value="750">750x750</option>
-          <option value="1000">1000x1000</option>
-        </select>
-      </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label for="color" class="block text-sm font-medium text-gray-300 mb-1 text-left">QR Kleur</label>
+                    <div class="flex items-center space-x-2 bg-gray-700 p-2 rounded-md border border-gray-600">
+                        <input type="text" id="hexInput" value="#000000" title="Hex kleurcode" class="p-1 w-full rounded-md bg-gray-900 text-white text-center border border-gray-500 focus:ring-1 focus:ring-green-500 outline-none" placeholder="#000000">
+                        <input type="color" id="color" value="#000000" title="Kies kleur" class="w-10 h-10 border-none rounded cursor-pointer">
+                    </div>
+                </div>
+                <div>
+                    <label for="style" class="block text-sm font-medium text-gray-300 mb-1 text-left">Stijl</label>
+                    <select id="style" class="w-full p-2.5 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none appearance-none">
+                        <option value="square" selected>Vierkant</option>
+                        <option value="rounded">Afgerond</option>
+                    </select>
+               </div>
+               <div class="md:col-span-2">
+                    <label for="size" class="block text-sm font-medium text-gray-300 mb-1 text-left">Grootte (pixels)</label>
+                    <select id="size" class="w-full p-2.5 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none appearance-none">
+                        <option value="250">250 x 250</option> <option value="300" selected>300 x 300</option> <option value="500">500 x 500</option>
+                        <option value="750">750 x 750</option> <option value="1000">1000 x 1000</option>
+                    </select>
+                </div>
+            </div>
 
-      <!-- Logo uploaden -->
-      <div class="mt-4 flex items-center justify-between bg-gray-700 text-white p-3 rounded-md">
-        <label id="logo-label" class="cursor-pointer">
-          Kies een logo
-          <input type="file" id="logo" accept="image/*" class="hidden" onchange="handleLogoUpload()" />
-        </label>
-        <span id="remove-logo" class="hidden text-red-400 cursor-pointer" onclick="removeLogo()">❌ Verwijder logo</span>
-      </div>
+            <div class="mb-6">
+                 <label for="logo" class="block text-sm font-medium text-gray-300 mb-1 text-left">Logo (optioneel)</label>
+                 <div class="mt-1 flex items-center justify-between bg-gray-700 text-white p-3 rounded-md border border-gray-600">
+                    <label id="logo-label" class="cursor-pointer hover:text-green-400 transition flex-grow text-left text-sm overflow-hidden whitespace-nowrap text-ellipsis">
+                        <span>Kies een logo (PNG, JPG, SVG)...</span>
+                        <input type="file" id="logo" accept="image/png, image/jpeg, image/svg+xml" class="hidden" />
+                    </label>
+                    <button id="remove-logo" class="hidden text-red-400 hover:text-red-300 ml-3 text-xl leading-none flex-shrink-0" title="Verwijder logo"> &times; </button>
+                 </div>
+                <p id="logo-error" class="text-red-400 text-xs mt-1 text-left"></p>
+            </div>
 
-      <!-- Download knoppen -->
-      <div class="mt-6 flex space-x-2">
-        <button onclick="promptDownload('png')" class="w-1/2 bg-green-400 text-gray-900 p-3 rounded-md font-bold hover:bg-green-500 transition">
-          Download PNG
-        </button>
-        <button onclick="promptDownload('svg')" class="w-1/2 bg-green-400 text-gray-900 p-3 rounded-md font-bold hover:bg-green-500 transition">
-          Download SVG
-        </button>
-      </div>
+            <div class="mb-8">
+                 <label class="block text-sm font-medium text-gray-300 mb-2 text-center">Download QR Code</label>
+                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <button id="download-png-btn" class="w-full bg-green-500 text-gray-900 p-3 rounded-md font-bold hover:bg-green-600 transition"> Download PNG </button>
+                    <button id="download-svg-btn" class="w-full bg-green-500 text-gray-900 p-3 rounded-md font-bold hover:bg-green-600 transition"> Download SVG </button>
+                 </div>
+            </div>
 
-      <!-- Batch generatie: upload bestand en genereer ZIP -->
-      <div class="mt-8 text-left">
-        <label class="block mb-2 font-semibold">Batch QR-codes:</label>
-        <input type="file" id="batch-file" accept=".txt,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-               class="mb-3 text-sm text-gray-300 bg-gray-700 rounded-md file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-green-400 file:text-gray-900 file:font-bold file:cursor-pointer"/>
-        <button onclick="generateBatchQRCodes()" class="bg-green-500 text-gray-900 px-4 py-2 rounded-md font-semibold hover:bg-green-600 transition">
-          Genereer QR ZIP
-        </button>
-      </div>
-    </div>
-  </div>
+            <div class="text-left border-t border-gray-700 pt-6">
+                <label class="block mb-2 font-semibold text-lg">Batch QR-codes Genereren</label>
+                 <p class="text-sm text-gray-400 mb-3">Upload een .txt, .csv, of .xlsx bestand...</p>
+                <input type="file" id="batch-file" accept=".txt,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx" class="mb-3 w-full text-sm ..."/>
+                <button id="generate-batch-btn" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-600 transition"> Genereer en Download ZIP </button>
+                 <p id="batch-status" class="mt-3 text-sm text-yellow-400 h-4"></p>
+            </div>
+        </div> </main>
 
-  <!-- JavaScript functionaliteit -->
-  <script>
-    // Globale variabelen
-    let qrCode;    // instantie van QRCodeStyling
-    let logoUrl = null;  // data-URL van gekozen logo (of null als geen logo)
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
 
-    // Async functie om URL te verkorten via TinyURL API
-    async function shortenURL(originalURL) {
-      try {
-        const response = await fetch("https://api.tinyurl.com/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer 7BVAr7m8ayoe9955VWrerzUrmyc5JZc6GziQes5N573fmkPmU81KW5VY1bqe"
-          },
-          body: JSON.stringify({ url: originalURL })
-        });
-        const data = await response.json();
-        // Als verkorten lukt, retourneer tiny_url, anders de originele URL
-        return data.data?.tiny_url || originalURL;
-      } catch (error) {
-        console.error("Fout bij URL verkorten:", error);
-        return originalURL;
-      }
-    }
+    <script>
+        // Globale variabelen / Instance
+        let qrCodeInstance = null;
+        let logoUrl = null;
+        let debounceTimer;
+        const defaultQrData = "https://joeyhub-five.vercel.app/"; // Standaard waarde
 
-    // Functie om (her) te genereren of bij te werken van de QR code
-    async function updateQRCode() {
-      const input = document.getElementById('url').value || "https://voorbeeld.nl";
-      const useShort = document.getElementById('shorten-url').checked;
-      const color = document.getElementById('color').value;
-      const style = document.getElementById('style').value;
-      const size = parseInt(document.getElementById('size').value) || 300;
-      const dataToEncode = useShort ? await shortenURL(input) : input;
-      // Oude QR-code verwijderen indien aanwezig
-      if (qrCode) {
-        document.getElementById('qr-code').innerHTML = "";
-      }
-      // Nieuwe QRCodeStyling instantie aanmaken met huidige opties
-      qrCode = new QRCodeStyling({
-        width: size,
-        height: size,
-        data: dataToEncode,
-        dotsOptions: { 
-          color: color,
-          type: style === "rounded" ? "rounded" : "square"
-        },
-        backgroundOptions: {
-          color: "transparent"  // transparante achtergrond zodat export PNG geen achtergrond heeft
-        },
-        image: logoUrl,  // logo afbeelding (data-URL) of null
-        imageOptions: {
-          crossOrigin: "anonymous",
-          margin: 5,
-          imageSize: 0.25    // grootte van logo binnen QR
+        // Element refs (eenmalig ophalen na DOM load)
+        let urlInput, shortenCheckbox, colorInput, hexInput, styleSelect, sizeSelect,
+            qrCodeElement, qrLoadingElement, logoFileInput, logoLabelSpan, removeLogoBtn,
+            logoErrorP, batchFileInput, batchStatusP, downloadPngBtn, downloadSvgBtn, generateBatchBtn;
+
+        // --- Debounce Functie ---
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
-      });
-      // QR-code SVG/Canvas toevoegen aan de container
-      qrCode.append(document.getElementById("qr-code"));
-    }
 
-    // Kleurinput synchronisatie: als hex-tekstveld aangepast, update color picker
-    function updateColorPicker() {
-      const hex = document.getElementById('hexInput').value;
-      document.getElementById('color').value = hex;
-      updateQRCode();
-    }
-    // En vice versa: als color picker gebruikt, update hex tekstveld
-    function updateColorInput() {
-      const colorVal = document.getElementById('color').value;
-      document.getElementById('hexInput').value = colorVal;
-      updateQRCode();
-    }
-
-    // Logo uploaden: zet logoUrl en toon/verberg verwijder-knop
-    function handleLogoUpload() {
-      const fileInput = document.getElementById('logo');
-      const removeBtn = document.getElementById('remove-logo');
-      if (fileInput.files.length === 0) return;
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = e => {
-        logoUrl = e.target.result;          // data:URL van afbeelding
-        removeBtn.classList.remove('hidden'); // toon de verwijder-knop
-        updateQRCode();                     // hergenereer QR met het logo
-      };
-      reader.readAsDataURL(file);
-    }
-    // Logo verwijderen
-    function removeLogo() {
-      logoUrl = null;
-      document.getElementById('logo').value = "";         // reset file input
-      document.getElementById('remove-logo').classList.add('hidden');
-      updateQRCode();                                     // update QR zonder logo
-    }
-
-    // Download de huidige QR-code in gevraagde formaat (png of svg)
-    function promptDownload(format) {
-      if (qrCode) {
-        qrCode.download({ name: "qr_code", extension: format });
-      }
-    }
-
- // Functie om een URL om te zetten naar een schone bestandsnaam
-function formatFilename(url) {
-    return url.replace(/(https?:\/\/)?(www\.)?/i, '') // Verwijder protocol en "www."
-              .replace(/\.[a-z]+(\/.*)?$/i, '') // Verwijder de domeinextensie (.nl/.com/.be) en alles erachter
-              .replace(/[^a-z0-9]/gi, '_'); // Vervang speciale tekens door underscores
-}
-
-// Batch QR-code generatie en download als ZIP
-async function generateBatchQRCodes() {
-    const fileInput = document.getElementById('batch-file');
-    if (!fileInput.files.length) return;
-    const file = fileInput.files[0];
-    let urlList = [];
-
-    if (file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
-        // Tekstbestand: lees regels
-        const textData = await file.text();
-        urlList = textData.split(/\r?\n/).filter(line => line.trim() !== "");
-    } else {
-        // Excel-bestand: via SheetJS parsen
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[firstSheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        rows.forEach(row => {
-            if (row[0]) urlList.push(String(row[0]));
-        });
-    }
-
-    if (urlList.length === 0) {
-        alert("Bestand bevat geen gegevens.");
-        return;
-    }
-
-    const zip = new JSZip();
-    const color = document.getElementById('color').value;
-    const style = document.getElementById('style').value;
-    const size = parseInt(document.getElementById('size').value) || 300;
-
-    for (const text of urlList) {
-        const cleanName = formatFilename(text);
-        const qr = new QRCodeStyling({
-            width: size,
-            height: size,
-            data: text,
-            dotsOptions: { color: color, type: style === "rounded" ? "rounded" : "square" },
-            backgroundOptions: { color: "transparent" },
-            image: logoUrl,
-            imageOptions: { crossOrigin: "anonymous", margin: 5, imageSize: 0.25 }
-        });
-
-        const blob = await qr.getRawData("png");
-        zip.file(`${cleanName}.png`, blob);
-    }
-
-    // Genereer ZIP en start download
-    zip.generateAsync({ type: "blob" }).then(blob => {
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = "qr_codes.zip";
-        downloadLink.click();
-    });
-}
-
-    // Genereer initiële QR-code (met standaardwaarden) bij laden pagina
-    updateQRCode();
-  </script>
-
-  <!-- Menu script en style (zelfde als op homepagina) -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("menu-toggle").addEventListener("click", () => {
-        document.getElementById("menu").classList.toggle("hidden");
-      });
-      document.querySelectorAll(".nav-link").forEach(link => {
-        if (link.href === window.location.href) {
-          link.classList.add("text-green-400", "font-bold");
+        // --- Kleur Synchronisatie ---
+        function updateColorPickerFromHex() { // Hernaamd voor duidelijkheid
+            if (hexInput && colorInput) {
+                if (/^#([0-9A-F]{3}){1,2}$/i.test(hexInput.value)) {
+                     colorInput.value = hexInput.value;
+                     debounceUpdateQRCode();
+                 }
+            }
         }
-      });
-    });
-  </script>
-  <style>.nav-link { /*... same CSS als eerder ...*/ } .nav-link:hover { color: #68D391; }</style>
+        function updateHexFromColorPicker() { // Hernaamd
+             if (hexInput && colorInput) {
+                 hexInput.value = colorInput.value;
+                 debounceUpdateQRCode();
+             }
+        }
+
+        // --- Logo Handling ---
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            logoErrorP.textContent = '';
+            if (!file) return;
+             if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
+                logoErrorP.textContent = 'Ongeldig: Kies PNG, JPG, SVG.'; event.target.value = null; return; }
+             const maxSize = 1 * 1024 * 1024; // 1MB
+             if (file.size > maxSize) {
+                 logoErrorP.textContent = 'Te groot (max 1MB).'; event.target.value = null; return; }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                logoUrl = e.target.result;
+                if(logoLabelSpan) logoLabelSpan.textContent = file.name.length > 25 ? file.name.substring(0, 22) + '...' : file.name;
+                if(removeLogoBtn) removeLogoBtn.classList.remove('hidden');
+                debounceUpdateQRCode();
+            };
+             reader.onerror = () => { logoErrorP.textContent = 'Fout bij lezen bestand.'; removeLogo(); }
+            reader.readAsDataURL(file);
+        }
+        function removeLogo() {
+            logoUrl = null;
+            if(logoFileInput) logoFileInput.value = "";
+            if(logoLabelSpan) logoLabelSpan.textContent = 'Kies een logo (PNG, JPG, SVG)...';
+            if(removeLogoBtn) removeLogoBtn.classList.add('hidden');
+            if(logoErrorP) logoErrorP.textContent = '';
+            debounceUpdateQRCode();
+        }
+
+        // --- URL Verkorter ---
+        async function shortenURL(originalURL) {
+             if (!originalURL || !originalURL.match(/^(https?:\/\/)/i)) { return originalURL; }
+            qrLoadingElement.classList.remove('hidden');
+            try {
+                const apiKey = "7BVAr7m8ayoe9955VWrerzUrmyc5JZc6GziQes5N573fmkPmU81KW5VY1bqe"; // Gebruik key uit origineel
+                if (!apiKey) throw new Error("TinyURL API Key niet beschikbaar.");
+                const response = await fetch("https://api.tinyurl.com/create", {
+                    method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+                    body: JSON.stringify({ url: originalURL }) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(`TinyURL Fout: ${errorData.errors?.[0] || response.statusText}`); }
+                const data = await response.json();
+                return data.data?.tiny_url || originalURL;
+            } catch (error) {
+                console.error("Fout bij URL verkorten:", error); alert(`Kon URL niet verkorten: ${error.message}. Gebruik originele URL.`); return originalURL;
+            } finally { qrLoadingElement.classList.add('hidden'); }
+        }
+
+// --- QR Code Generatie (AANGEPAST: Vierkant = scherp, Afgerond = puntjes rond, ogen MAX rond) ---
+async function updateQRCodeInternal() {
+             // Referenties naar DOM elementen
+             const qrLoadingElement = document.getElementById("qr-loading");
+             const qrCodeElement = document.getElementById("qr-code");
+             const urlInput = document.getElementById('url');
+             const shortenCheckbox = document.getElementById('shorten-url');
+             const colorInput = document.getElementById('color');
+             const styleSelect = document.getElementById('style');
+             const sizeSelect = document.getElementById('size');
+
+             qrLoadingElement.classList.remove('hidden');
+             qrCodeElement.innerHTML = ""; // Clear previous
+
+            try {
+                const input = urlInput.value.trim() || defaultQrData;
+                const useShort = shortenCheckbox.checked;
+                const color = colorInput.value;
+                const selectedStyle = styleSelect.value; // 'square' of 'rounded'
+                const size = parseInt(sizeSelect.value) || 300;
+                const dataToEncode = useShort ? await shortenURL(input) : input;
+
+                // Bepaal de stijl voor de punten en hoeken gebaseerd op de selectie
+                let dotsType = "square";
+                let cornerSquareType = "square";
+                let cornerDotType = "square";
+
+                // Aanpassen als "Subtiel Afgerond" is gekozen
+                if (selectedStyle === "rounded") {
+                    dotsType = "rounded"; // Afgeronde data-puntjes
+
+                    // Stel de hoeken ('ogen') in op de meest ronde types
+                    cornerSquareType = "extra-rounded"; // Buitenste deel
+                    cornerDotType = "dot";             // Binnenste deel
+                }
+                // Voor 'square' blijven de defaults (square, square, square) behouden.
+
+                // Stel de opties samen
+                const qrOptions = {
+                    width: size, height: size, data: dataToEncode, margin: 5,
+                    dotsOptions: { color: color, type: dotsType }, // Dynamisch type puntjes
+                    backgroundOptions: { color: "transparent" },
+                    cornersSquareOptions: { type: cornerSquareType, color: color }, // Dynamisch type hoekvierkant
+                    cornersDotOptions: { type: cornerDotType, color: color },    // Dynamisch type hoekpunt
+                    qrOptions: { errorCorrectionLevel: 'H' }, // Hoge error correctie
+                    imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 4 }
+                };
+                // Voeg logo toe indien aanwezig
+                if (logoUrl) {
+                     qrOptions.image = logoUrl;
+                 }
+
+                 // Maak of update de QR code instantie
+                 if (!qrCodeInstance) { // qrCodeInstance is globale variabele
+                     qrCodeInstance = new QRCodeStyling(qrOptions);
+                     qrCodeInstance.append(qrCodeElement);
+                 } else {
+                     await qrCodeInstance.update(qrOptions);
+                 }
+
+            } catch (error) {
+                 console.error("Fout bij genereren QR code:", error);
+                 qrCodeElement.innerHTML = `<p class="text-red-500 text-center p-4">Kon QR code niet genereren.</p>`;
+             } finally {
+                  qrLoadingElement.classList.add('hidden');
+             }
+        }
+        // De debounced versie blijft ongewijzigd
+        const debounceUpdateQRCode = debounce(updateQRCodeInternal, 500);
+
+        // --- Download Functie ---
+        async function promptDownload(format) {
+            if (!qrCodeInstance) { alert("Genereer eerst een QR code."); return; }
+             const currentSize = qrCodeInstance._options.width || 300;
+             const defaultFilename = `qrcode_${currentSize}px`;
+            let filename = prompt(`Voer een bestandsnaam in voor de ${format.toUpperCase()} (grootte ${currentSize}px):`, defaultFilename);
+            if (filename === null) return;
+            filename = filename.trim() === "" ? defaultFilename : filename;
+            filename = filename.replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+            try { await qrCodeInstance.download({ name: filename, extension: format }); }
+            catch (error) { console.error(`Fout bij downloaden ${format}:`, error); alert(`Kon ${format.toUpperCase()} niet downloaden.`); }
+        }
+
+        // --- Batch Generatie ---
+        function formatFilename(urlOrText) {
+             let name = urlOrText;
+             try { const url = new URL(urlOrText.startsWith('http') ? urlOrText : `http://${urlOrText}`); name = url.hostname.replace(/^www\./i, '') + (url.pathname.length > 1 ? url.pathname.replace(/\//g, '_') : ''); }
+             catch (e) { name = urlOrText; }
+            name = name.replace(/[^a-z0-9_\-]/gi, '_').substring(0, 50); return name || 'qrcode'; }
+
+        async function generateBatchQRCodes() {
+             if (!batchFileInput.files.length) { alert("Selecteer eerst een bestand."); return; }
+             const file = batchFileInput.files[0]; let dataList = [];
+             batchStatusP.textContent = "Bestand lezen..."; batchStatusP.classList.remove('text-red-500'); // Reset error color
+
+             try {
+                 if (file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
+                     const textData = await file.text(); dataList = textData.split(/\r?\n/).map(line => line.trim()).filter(line => line !== "");
+                 } else if (file.name.endsWith(".xlsx")) {
+                     const arrayBuffer = await file.arrayBuffer(); const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+                     const firstSheetName = workbook.SheetNames[0]; const sheet = workbook.Sheets[firstSheetName];
+                     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                     dataList = rows.map(row => String(row[0]).trim()).filter(cell => cell !== "");
+                 } else { throw new Error("Ongeldig bestandstype. Gebruik .txt, .csv, of .xlsx"); }
+                 if (dataList.length === 0) throw new Error("Bestand bevat geen geldige gegevens.");
+
+                 batchStatusP.textContent = `Gevonden ${dataList.length} items. QR codes genereren...`;
+                 const zip = new JSZip(); const color = colorInput.value; const style = styleSelect.value;
+                 const size = parseInt(sizeSelect.value) || 300; const currentLogoUrl = logoUrl;
+
+                 for (let i = 0; i < dataList.length; i++) {
+                     const text = dataList[i]; const cleanName = formatFilename(text) || `item_${i + 1}`;
+                     batchStatusP.textContent = `Genereren ${i + 1}/${dataList.length}: ${cleanName}...`;
+                     const qr = new QRCodeStyling({ width: size, height: size, data: text, margin: 5,
+                         dotsOptions: { color: color, type: style }, backgroundOptions: { color: "transparent" },
+                         cornersSquareOptions: { type: "extra-rounded", color: color }, cornersDotOptions: { type: "dot", color: color },
+                         qrOptions: { errorCorrectionLevel: 'H' }, imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 4 },
+                         image: currentLogoUrl });
+                     const blob = await qr.getRawData("png");
+                     if (blob) { zip.file(`${cleanName}.png`, blob); }
+                     else { console.warn(`Kon geen QR code genereren voor: ${text}`); }
+                 }
+                 batchStatusP.textContent = "ZIP bestand maken...";
+                 const zipBlob = await zip.generateAsync({ type: "blob" });
+                 const downloadLink = document.createElement('a'); downloadLink.href = URL.createObjectURL(zipBlob);
+                 downloadLink.download = `batch_qrcodes_${Date.now()}.zip`; downloadLink.click();
+                 URL.revokeObjectURL(downloadLink.href);
+                 batchStatusP.textContent = `Batch voltooid! ${dataList.length} QR codes gedownload.`;
+             } catch (error) {
+                 console.error("Batch generatie fout:", error);
+                 alert(`Fout bij batch generatie: ${error.message}`);
+                 batchStatusP.textContent = `Fout: ${error.message}`;
+                 batchStatusP.classList.add('text-red-500'); // Make error red
+             } finally { setTimeout(() => { batchStatusP.textContent = ""; batchStatusP.classList.remove('text-red-500');}, 10000); }
+        }
+
+        // --- Initialisatie en Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+             // Element refs ophalen
+             urlInput = document.getElementById('url');
+             shortenCheckbox = document.getElementById('shorten-url');
+             colorInput = document.getElementById('color');
+             hexInput = document.getElementById('hexInput');
+             styleSelect = document.getElementById('style');
+             sizeSelect = document.getElementById('size');
+             qrCodeElement = document.getElementById("qr-code");
+             qrLoadingElement = document.getElementById("qr-loading");
+             logoFileInput = document.getElementById('logo');
+             logoLabelSpan = document.getElementById('logo-label')?.querySelector('span');
+             removeLogoBtn = document.getElementById('remove-logo');
+             logoErrorP = document.getElementById('logo-error');
+             batchFileInput = document.getElementById('batch-file');
+             batchStatusP = document.getElementById('batch-status');
+             downloadPngBtn = document.getElementById('download-png-btn');
+             downloadSvgBtn = document.getElementById('download-svg-btn');
+             generateBatchBtn = document.getElementById('generate-batch-btn');
+
+             // Event listeners koppelen
+             if (urlInput) urlInput.addEventListener('input', debounceUpdateQRCode);
+             if (shortenCheckbox) shortenCheckbox.addEventListener('change', debounceUpdateQRCode);
+             if (hexInput) hexInput.addEventListener('input', updateColorPickerFromHex); // Use specific function
+             if (colorInput) colorInput.addEventListener('input', updateHexFromColorPicker); // Use specific function
+             if (styleSelect) styleSelect.addEventListener('change', debounceUpdateQRCode);
+             if (sizeSelect) sizeSelect.addEventListener('change', debounceUpdateQRCode);
+             if (logoFileInput) logoFileInput.addEventListener('change', handleLogoUpload);
+             if (removeLogoBtn) removeLogoBtn.addEventListener('click', removeLogo);
+             if (downloadPngBtn) downloadPngBtn.addEventListener('click', () => promptDownload('png')); // Wrap in function
+             if (downloadSvgBtn) downloadSvgBtn.addEventListener('click', () => promptDownload('svg')); // Wrap in function
+             if (generateBatchBtn) generateBatchBtn.addEventListener('click', generateBatchQRCodes);
+
+             debounceUpdateQRCode(100); // Eerste QR generatie
+             const yearSpan = document.getElementById('current-year');
+             if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+         });
+
+    </script>
+
+<script src="main.js"></script>
+
 </body>
 </html>

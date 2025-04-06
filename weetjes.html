@@ -1,124 +1,118 @@
-<!-- weetjes.html -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weetjes Tool – Joey's Hub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weetjes Tool - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+       /* Stijl om het weetje wat meer op te laten vallen */
+       #weetje {
+           min-height: 3em; /* Geeft wat ruimte, ook als er nog geen weetje is */
+           transition: opacity 0.5s ease-in-out;
+           opacity: 1;
+       }
+       #weetje.loading {
+           opacity: 0.5;
+       }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-  <!-- Navigatie -->
-  <header class="bg-gray-800 shadow-lg">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
-      <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
-        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16m-7 6h7" />
-        </svg>
-      </button>
-      <nav id="menu" class="hidden md:flex md:items-center space-x-6">
-        <ul class="flex flex-col md:flex-row md:space-x-6 w-full md:w-auto 
-                   bg-gray-800 md:bg-transparent absolute md:relative top-16 left-0 
-                   md:top-0 md:left-auto md:flex">
-                   <li><a href="index.html" class="nav-link">Home</a></li>
-                   <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
-                   <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
-                   <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
-                   <li><a href="spintaxchecker.html" class="nav-link">Spintax Checker</a></li>
-                   <li><a href="contact.html" class="nav-link">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-  <!-- Weetjes sectie -->
-  <section class="text-center py-20 px-4 bg-gradient-to-r from-gray-800 to-gray-700">
-    <h2 class="text-4xl font-extrabold">Weetjes Tool</h2>
-    <p class="mt-4 text-lg text-gray-300">Klik op de knop voor een leuk weetje!</p>
-    <button onclick="toonWeetje()" class="mt-6 bg-green-500 px-6 py-3 rounded-lg shadow-md text-white font-bold hover:bg-green-400 transition">
-      Geef mij een weetje!
-    </button>
-    <p id="weetje" class="mt-6 text-xl text-green-400 font-semibold"></p>
-  </section>
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40">
+                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+             <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end">
+                 </div>
+        </div>
+    </header>
 
-  <!-- Footer -->
-  <footer class="bg-gray-900 text-center py-4">
-    <p class="text-gray-400">© 2025 Joey's Hub. Alle rechten voorbehouden.</p>
-  </footer>
+    <main class="flex-grow container mx-auto px-4 py-12">
 
-  <!-- Weetjes script + menu script -->
-  <script>
-    const weetjes = [
-      "Een octopus heeft drie harten.",
-      "Honing bederft nooit.",
-      "Een slak kan drie jaar slapen.",
-      "Bananen zijn bessen, maar aardbeien niet.",
-      "Water kan gelijktijdig bevriezen én koken bij 0,01°C (triple point).",
-      "Er zijn meer sterren in het heelal dan zandkorrels op aarde.",
-      "De tong van een blauwe vinvis weegt evenveel als een volwassen olifant.",
-      "Katten hebben een rudimentaire extra teen, vergelijkbaar met een menselijke duim.",
-      "Bliksem is vijf keer heter dan het oppervlak van de zon.",
-      "Een groep flamingo's heet een 'flamboyance'.",
-      "Het hart van een garnaal zit in zijn hoofd.",
-      "Krokodillen kunnen hun tong niet uitsteken.",
-      "Onder de witte vacht van een ijsbeer is zijn huid zwart.",
-      "De Mona Lisa heeft geen wenkbrauwen.",
-      "Menselijk bot is sterker dan beton (per gewichtseenheid).",
-      "Een nies kan een snelheid van 160 km/u bereiken.",
-      "De kleinste vogel is de bijenkolibrie (ca. 5 cm).",
-      "Zonlicht duurt ~8 minuten en 20 sec om de aarde te bereiken.",
-      "Mieren slapen niet zoals mensen; ze hebben korte rustperiodes.",
-      "Onder water huilen is onmogelijk; tranen mengen meteen met het water.",
-      "Haaien hebben geen botten, alleen kraakbeen.",
-      "De eerste e-mail ooit werd in 1971 verstuurd.",
-      "Slakken hebben meer dan 14.000 tanden.",
-      "Volwassen mensen hebben ~206 botten, baby's ~300 bij geboorte.",
-      "Een muis past door een opening zo groot als een potlood.",
-      "Het hart van een kolibrie kan 1.200 keer per minuut kloppen.",
-      "Alle pinguïns leven op het zuidelijk halfrond.",
-      "De meeste lippenstiften bevatten vissenschubben.",
-      "Een konijn kan niet zoals een mens zijn nek draaien.",
-      "Dolfijnen houden half hun hersenen wakker tijdens het slapen.",
-      "Het echo van het geluid van een eend is niet hoorbaar.",
-      "Met één potlood kun je een lijn van ~56 km tekenen.",
-      "Het Empire State Building wordt jaarlijks vaak door bliksem getroffen.",
-      "De kleinste volwassen kat weegt slechts ~1,2 kg.",
-      "Goud is uit zeewater te winnen, maar niet rendabel.",
-      "Een mens verliest ~100 haren per dag.",
-      "Een kaars brandt sneller op grote hoogte.",
-      "Ieders tongafdruk is uniek, net als vingerafdrukken.",
-      "Sommige vissen kunnen achteruit zwemmen.",
-      "De kortste oorlog duurde ~38 minuten (Anglo-Zanzibar oorlog, 1896).",
-      "Spinnen eten hun eigen web op om het materiaal te hergebruiken.",
-      "De aarde draait ~1.670 km/u rond haar as.",
-      "In je mond zitten meer bacteriën dan er mensen op aarde zijn.",
-      "De geur van vers gras is een stressreactie van het gras.",
-      "De maan lijkt even groot als de zon omdat hij 400x kleiner én 400x dichterbij is.",
-      "Een haai kan 1 druppel bloed ruiken in 25 miljoen liter water.",
-      "De eerste website ooit (1991) is nog steeds online.",
-      "Tranen bevatten een natuurlijke pijnstiller.",
-      "Een komkommer bestaat voor ~95% uit water.",
-      "Het nationale dier van Schotland is een eenhoorn."
-    ];
-    function toonWeetje() {
-      const idx = Math.floor(Math.random() * weetjes.length);
-      document.getElementById("weetje").innerText = weetjes[idx];
-    }
-    // Menu functionaliteit
-    document.getElementById("menu-toggle").addEventListener("click", () => {
-      document.getElementById("menu").classList.toggle("hidden");
-    });
-    document.querySelectorAll(".nav-link").forEach(link => {
-      if (link.href === window.location.href) {
-        link.classList.add("text-green-400", "font-bold");
-      }
-    });
-  </script>
-  <style>
-    .nav-link { display: block; padding: 10px 20px; color: white; text-decoration: none; transition: color 0.3s; }
-    .nav-link:hover { color: #68D391; }
-  </style>
+        <section class="w-full max-w-2xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-center mb-2">Weetjes Tool</h2>
+            <p class="text-center text-gray-400 mb-6">Klik op de knop voor een leuk weetje!</p>
+            <div class="mb-8"> <button id="weetjeButton" class="bg-green-500 px-8 py-3 rounded-lg shadow-md text-gray-900 font-bold hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105">
+                    Geef mij een weetje!
+                </button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-md min-h-[8rem] flex items-center justify-center">
+                 <p id="weetje" class="text-xl text-green-300 font-semibold"></p>
+             </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // De lijst met weetjes
+        const weetjes = [
+            "Een octopus heeft drie harten.", "Wist je dat honing nooit bederft?", "Een slak kan drie jaar slapen.",
+            "Bananen zijn bessen, maar aardbeien niet!", "Water kan tegelijk bevriezen en koken bij 0,01°C (het tripelpunt).",
+            "Er zijn meer sterren in het universum dan zandkorrels op aarde.", "De tong van een blauwe vinvis weegt evenveel als een olifant.",
+            "Katten 'praten' (miauw) voornamelijk om met mensen te communiceren, niet met andere katten.", "Bliksem is ongeveer 5 keer heter dan het oppervlak van de zon.",
+            "Een groep flamingo's heet een 'flamboyance'.", "Het hart van een garnaal zit in zijn kop.", "Krokodillen kunnen hun tong niet uitsteken.",
+            "De huid van een ijsbeer is zwart.", "De Mona Lisa heeft geen wenkbrauwen (waarschijnlijk door restauraties of mode).",
+            "Menselijk bot is, gram voor gram, sterker dan staal.", "Een niesbui kan snelheden van 160 km/u bereiken.",
+            "De bijenkolibrie is de kleinste vogel ter wereld.", "Zonlicht doet er ~8 minuten en 20 seconden over om de aarde te bereiken.",
+            "Mieren slapen niet; ze hebben korte rustperiodes.", "Onder water kun je niet huilen zoals boven water.", "Haaien bestaan al langer dan bomen.",
+            "De eerste e-mail werd in 1971 verstuurd door Ray Tomlinson.", "Een gemiddelde wolk weegt ongeveer 500.000 kilogram.",
+            "Een baby heeft meer botten (~300) dan een volwassene (~206).", "Een muis kan door een gat zo klein als een balpen.",
+            "Het hart van een kolibrie klopt tot 1.200 keer per minuut.", "Alle pinguïnsoorten leven op het zuidelijk halfrond.",
+            "Sommige lippenstiften bevatten vissenschubben voor glans.", "Konijnen kunnen niet overgeven.", "Dolfijnen slapen met één hersenhelft tegelijk.",
+            "Een potlood kan een lijn van ~56 km lang tekenen.", "Het Empire State Building heeft zijn eigen postcode.",
+            "Otters houden elkaars pootjes vast tijdens het slapen zodat ze niet wegdrijven.", "Goud is eetbaar (in kleine hoeveelheden).",
+            "Een mens verliest gemiddeld 40-100 haren per dag.", "Kaarsen branden langer in de ruimte dan op aarde.",
+            "Net als vingerafdrukken, heeft iedereen een unieke tongafdruk.", "De meeste vissen kunnen zowel vooruit als achteruit zwemmen.",
+            "De kortste oorlog duurde 38 minuten (Anglo-Zanzibar Oorlog).", "Spinnen eten vaak hun eigen web op om de zijde te recyclen.",
+            "De aarde draait met ~1.670 km/u rond zijn as (bij de evenaar).", "Er leven meer bacteriën in je mond dan er mensen op aarde zijn.",
+            "De geur van gemaaid gras is een 'noodsignaal' van het gras.", "De maan lijkt even groot als de zon door een perfecte verhouding van grootte en afstand.",
+            "Een haai kan bloed ruiken op honderden meters afstand.", "De eerste website (info.cern.ch) is nog steeds online.",
+            "Tranen bevatten lysozym, een antibacterieel enzym.", "Een komkommer bestaat voor 95-96% uit water.",
+            "Het nationale dier van Schotland is de eenhoorn."
+        ];
+        let vorigWeetjeIndex = -1;
+
+        function toonWeetje() {
+            const weetjeElement = document.getElementById("weetje");
+            if (!weetjeElement) return;
+            let randomIndex;
+            if (weetjes.length > 1) {
+                do { randomIndex = Math.floor(Math.random() * weetjes.length); } while (randomIndex === vorigWeetjeIndex);
+            } else { randomIndex = 0; }
+            vorigWeetjeIndex = randomIndex;
+            weetjeElement.classList.add('loading');
+            setTimeout(() => {
+                 weetjeElement.innerText = weetjes[randomIndex];
+                 weetjeElement.classList.remove('loading');
+             }, 250);
+        }
+
+         document.addEventListener('DOMContentLoaded', () => {
+             const weetjeButton = document.getElementById('weetjeButton');
+             if (weetjeButton) {
+                 weetjeButton.addEventListener('click', toonWeetje);
+                 toonWeetje(); // Toon meteen een weetje
+             } else { console.error("Knop met ID 'weetjeButton' niet gevonden!"); }
+             const yearSpan = document.getElementById('current-year');
+             if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+         });
+    </script>
+
+    <script src="main.js"></script>
+
 </body>
 </html>

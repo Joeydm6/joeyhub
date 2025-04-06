@@ -3,66 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mijn Tools - Gratis AI en Generators</title>
+    <title>Joey's Hub - Gratis Tools en Generators</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor de actieve link (redundant als Tailwind classes in JS goed werken, maar kan helpen) */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col"> <header class="bg-gray-800 shadow-lg sticky top-0 z-30"> <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a> <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40"> <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
 
-    <!-- Invoegen menu -->
-    <header class="bg-gray-800 shadow-lg">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-green-400">Joey's Hub</h1>
-            <nav>
-                <ul class="flex space-x-6">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="qrgenerator.html" class="nav-link text-green-400 font-bold">QR Generator</a></li>
-                    <li><a href="factuur.html" class="nav-link">Facturatie Tool</a></li>
-                    <li><a href="weetjes.html" class="nav-link">Weetjes Tool</a></li>
-                    <li><a href="spintaxchecker.html" class="hover:text-green-400">Spintax Checker</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact</a></li>
-                </ul>
-            </nav>
+            <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end">
+                 </div>
         </div>
     </header>
 
-    <!-- Hero Sectie -->
-    <section class="text-center py-20 bg-gradient-to-r from-gray-800 to-gray-700">
-        <h2 class="text-4xl font-extrabold">Joey's hub</h2>
-        <p class="mt-4 text-lg text-gray-300">Tools om de werkprocessen te versnellen.</p>
-    </section>
+    <main class="flex-grow">
+        <section class="text-center py-20 bg-gradient-to-r from-gray-800 to-gray-700">
+            <h2 class="text-4xl font-extrabold">Joey's Hub</h2>
+            <p class="mt-4 text-lg text-gray-300">Tools om de werkprocessen te versnellen.</p>
+        </section>
 
-    <!-- Tools Sectie -->
-    <section id="tools" class="container mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold text-center mb-6">Beschikbare Tools</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <a href="qrgenerator.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">QR Code Generator</h3>
-                <p class="text-gray-300 mt-2">Maak eenvoudig QR-codes van elke tekst of URL.</p>
-            </a>
-            <a href="factuur.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">Facturatie Tool</h3>
-                <p class="text-gray-300 mt-2">Maak en download professionele facturen.</p>
-            </a>
-            <a href="weetjes.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">Weetjes Tool</h3>
-                <p class="text-gray-300 mt-2">Ontvang interessante weetjes.</p>
-            </a>
-            <a href="spintaxchecker.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition">
-                <h3 class="text-xl font-semibold text-green-400">Spintax Checker</h3>
-                <p class="text-gray-300 mt-2">Analyseer spintax variaties en woorden.</p>
-            </a>
-        </div>
-    </section>
+<!-- Tools Sectie -->
+<section id="tools" class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-center mb-10">Beschikbare Tools</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
-    <!-- Contact Sectie -->
-    <section id="contact" class="bg-gray-800 py-12 text-center">
-        <h2 class="text-2xl font-bold">Contact</h2>
-        <p class="text-gray-300 mt-2">Heb je vragen of suggesties? Neem contact op via <a href="mailto:joey@klassebv.nl" class="text-green-400 underline">joey@klassebv.nl</a>.</p>
-    </section>
+        <!-- QR Code Generator -->
+        <a href="qrgenerator.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">QR Code Generator</h3>
+            <p class="text-gray-300">Maak eenvoudig QR-codes van elke tekst of URL.</p>
+        </a>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-center py-4">
-        <p class="text-gray-400">© 2025 Joey's hub. Alle rechten voorbehouden.</p>
+        <!-- Midjourney Prompt Generator - VERWIJDERD -->
+
+        <!-- Spintax Checker -->
+        <a href="spintax.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Spintax Checker</h3>
+            <p class="text-gray-300">Controleer en test Spintax-teksten eenvoudig.</p>
+        </a>
+
+         <!-- Nieuwe Tool: Lorem Ipsum -->
+         <!-- ... rest van de tools ... -->
+         <a href="lorem-ipsum.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Lorem Ipsum Generator</h3>
+            <p class="text-gray-300">Genereert Nederlandse dummytekst waarin een door de gebruiker ingevoerde bedrijfsnaam verwerkt kan worden.</p>
+        </a>
+
+         <!-- Nieuwe Tool: Case Converter -->
+        <a href="case-converter.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Case Converter</h3>
+            <p class="text-gray-300">Converteert de tekst in een invoerveld naar verschillende hoofdlettervarianten.</p>
+        </a>
+
+         <!-- Nieuwe Tool: Woorden Teller -->
+        <a href="woorden-teller.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Woorden Teller</h3>
+            <p class="text-gray-300">Telt live het aantal woorden en karakters (met en zonder spaties) in een tekstvak.</p>
+        </a>
+
+         <!-- Nieuwe Tool: Tijdzone Converter -->
+        <a href="tijdzone-converter.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Tijdzone Converter</h3>
+            <p class="text-gray-300">Converteert een datum en tijd van de ene tijdzone naar de andere.</p>
+        </a>
+
+         <!-- Nieuwe Tool: Datum Calculator -->
+        <a href="datum-calculator.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Datum Calculator</h3>
+            <p class="text-gray-300">Voert berekeningen uit met datums, zoals het verschil tussen twee data of een datum in de toekomst/verleden berekenen.</p>
+        </a>
+
+    </div>
+</section>
+
+        <section id="contact" class="bg-gray-800 py-12 text-center mt-auto"> <h2 class="text-2xl font-bold">Contact</h2>
+            <p class="text-gray-300 mt-2">Heb je vragen of suggesties? Neem contact op via <a href="mailto:joey@klassebv.nl" class="text-green-400 underline hover:text-green-300">joey@klassebv.nl</a>.</p>
+        </section>
+    </main>
+
+    <footer class="bg-gray-900 text-center py-6">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
     </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Kleine toevoeging voor dynamisch jaar in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+
 </body>
 </html>
