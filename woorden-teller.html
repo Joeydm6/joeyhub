@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woorden & Karakters Teller - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+       /* Minimale hoogte voor textarea */
+       textarea {
+           resize: vertical;
+           min-height: 200px; /* Iets groter voor deze tool */
+       }
+       /* Styling voor de teller outputs */
+       .counter-box {
+            @apply text-center p-4 bg-gray-700 rounded shadow;
+       }
+       .counter-label {
+            @apply block text-sm text-gray-400;
+       }
+       .counter-value {
+            @apply block text-2xl font-semibold text-green-300;
+       }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center"> <div class="flex-shrink-0"> <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            </div>
+
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
+                 </div>
+
+            <div class="md:hidden flex-shrink-0"> <button id="menu-toggle" class="text-white focus:outline-none z-40">
+                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                     </svg>
+                 </button>
+             </div>
+        </div>
+
+         <div id="mobile-menu-area" class="md:hidden">
+             </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+
+        <h2 class="text-3xl font-bold text-center mb-2">Woorden & Karakters Teller</h2>
+        <p class="text-center text-gray-400 mb-6">Telt live het aantal woorden en karakters terwijl je typt.</p>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6 max-w-3xl mx-auto">
+
+            <div>
+                 <label for="textInput" class="block text-sm font-medium text-gray-300 mb-1">Voer hier uw tekst in:</label>
+                 <textarea id="textInput"
+                           class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none"
+                           placeholder="Begin met typen of plak uw tekst..."></textarea>
+             </div>
+
+             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                 <div class="counter-box">
+                     <span class="counter-label">Woorden</span>
+                     <span id="wordCountOutput" class="counter-value">0</span>
+                 </div>
+                 <div class="counter-box">
+                     <span class="counter-label">Karakters (incl. spaties)</span>
+                     <span id="charCountInclOutput" class="counter-value">0</span>
+                 </div>
+                  <div class="counter-box">
+                     <span class="counter-label">Karakters (excl. spaties)</span>
+                     <span id="charCountExclOutput" class="counter-value">0</span>
+                 </div>
+             </div>
+
+        </div> </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // --- Element Referenties ---
+        let textInput, wordCountOutput, charCountInclOutput, charCountExclOutput;
+
+        // --- Functie om tellingen bij te werken ---
+        function updateCounts() {
+            if (!textInput || !wordCountOutput || !charCountInclOutput || !charCountExclOutput) {
+                console.error("Een of meer teller elementen niet gevonden!");
+                return;
+            }
+
+            const text = textInput.value;
+
+            // 1. Karakter telling (inclusief spaties)
+            const charCountIncl = text.length;
+            charCountInclOutput.textContent = charCountIncl.toLocaleString('nl-NL');
+
+            // 2. Karakter telling (exclusief spaties en andere witruimte)
+            const charCountExcl = text.replace(/\s/g, '').length; // \s pakt alle witruimte
+            charCountExclOutput.textContent = charCountExcl.toLocaleString('nl-NL');
+
+            // 3. Woorden telling
+            const trimmedText = text.trim(); // Verwijder witruimte aan begin/eind
+            let wordCount = 0;
+            if (trimmedText) {
+                // Split op een of meer witruimte karakters (\s+)
+                const words = trimmedText.split(/\s+/);
+                wordCount = words.length;
+            }
+            wordCountOutput.textContent = wordCount.toLocaleString('nl-NL');
+        }
+
+
+        // --- Initialisatie en Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Element refs ophalen
+            textInput = document.getElementById('textInput');
+            wordCountOutput = document.getElementById('wordCountOutput');
+            charCountInclOutput = document.getElementById('charCountInclOutput');
+            charCountExclOutput = document.getElementById('charCountExclOutput');
+
+             // Guard clause
+            if (!textInput || !wordCountOutput || !charCountInclOutput || !charCountExclOutput) {
+                 console.error("Een of meer HTML elementen voor de Teller zijn niet gevonden!");
+                 return;
+             }
+
+            // Event listener koppelen aan de textarea voor live updates
+            textInput.addEventListener('input', updateCounts);
+
+            // Initiele telling uitvoeren (voor het geval er al tekst staat bij laden)
+            updateCounts();
+
+            // Dynamisch jaar in footer
+            const yearSpan = document.getElementById('current-year');
+            if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+        });
+
+    </script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>

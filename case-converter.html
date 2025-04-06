@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Converter - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+       /* Optioneel: minimale hoogte voor textarea */
+       textarea {
+           resize: vertical;
+           min-height: 150px; /* Zorg dat er altijd wat hoogte is */
+       }
+       /* Styling voor knoppen is nu direct in HTML met Tailwind klassen */
+       /* .case-button {...} VERWIJDERD */
+       /* .copy-button {...} VERWIJDERD */
+       /* .copy-button:disabled {...} VERWIJDERD */
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center"> <div class="flex-shrink-0"> <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            </div>
+
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
+                 </div>
+
+            <div class="md:hidden flex-shrink-0"> <button id="menu-toggle" class="text-white focus:outline-none z-40">
+                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                     </svg>
+                 </button>
+             </div>
+        </div>
+
+         <div id="mobile-menu-area" class="md:hidden">
+             </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+
+        <h2 class="text-3xl font-bold text-center mb-2">Case Converter</h2>
+        <p class="text-center text-gray-400 mb-6">Converteer eenvoudig tekst naar verschillende hoofdlettervarianten.</p>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6 max-w-3xl mx-auto">
+
+            <div>
+                 <label for="inputText" class="block text-sm font-medium text-gray-300 mb-1">Voer tekst in:</label>
+                 <textarea id="inputText" rows="10"
+                           class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none"
+                           placeholder="Plak of typ hier uw tekst..."></textarea>
+             </div>
+
+             <div class="flex flex-wrap gap-3 my-4 justify-center md:justify-start">
+                <button id="upperCaseBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-sm">HOOFDLETTERS</button>
+                <button id="lowerCaseBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-sm">kleine letters</button>
+                <button id="titleCaseBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-sm">Titel Case</button>
+                <button id="sentenceCaseBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out text-sm">Zin Case</button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-end mt-4 gap-3">
+                 <span id="copyFeedback" class="text-sm text-green-400 h-4 order-2 sm:order-1"></span>
+                 <button id="copyBtn"
+                         class="bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out disabled:bg-gray-500 disabled:cursor-not-allowed order-1 sm:order-2">
+                    Kopieer Resultaat
+                 </button>
+            </div>
+
+        </div> </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // --- Element Referenties ---
+        let inputTextarea, upperCaseBtn, lowerCaseBtn, titleCaseBtn, sentenceCaseBtn, copyBtn, copyFeedbackSpan;
+
+        // --- Case Conversie Functies ---
+        function convertToUppercase() { /* ... (blijft hetzelfde) ... */ if(inputTextarea) inputTextarea.value = inputTextarea.value.toUpperCase(); }
+        function convertToLowercase() { /* ... (blijft hetzelfde) ... */ if(inputTextarea) inputTextarea.value = inputTextarea.value.toLowerCase(); }
+        function convertToTitleCase() { /* ... (blijft hetzelfde) ... */ if(inputTextarea) { let t = inputTextarea.value.toLowerCase(); inputTextarea.value = t.replace(/\b\w/g, c => c.toUpperCase()); } }
+        function convertToSentenceCase() { /* ... (blijft hetzelfde) ... */ if(inputTextarea) { let t = inputTextarea.value.toLowerCase(); t = t.charAt(0).toUpperCase() + t.slice(1); inputTextarea.value = t.replace(/(?<=[.?!]\s+)\w/g, c => c.toUpperCase()); } }
+
+        // --- Kopieer Functie ---
+        function copyText() {
+            if (!inputTextarea || !navigator.clipboard) { if (copyFeedbackSpan) copyFeedbackSpan.textContent = 'Kopiëren niet ondersteund/mogelijk.'; return; }
+            navigator.clipboard.writeText(inputTextarea.value).then(() => {
+                if (copyBtn && copyFeedbackSpan) {
+                    const originalText = 'Kopieer Resultaat'; copyBtn.textContent = 'Gekopieerd!';
+                    copyBtn.disabled = true; /* Stijl komt nu van disabled: klasse */ copyFeedbackSpan.textContent = 'Tekst gekopieerd!';
+                    setTimeout(() => { copyBtn.textContent = originalText; copyBtn.disabled = false; copyFeedbackSpan.textContent = ''; }, 2000);
+                }
+            }).catch(err => {
+                console.error('Kon tekst niet kopiëren: ', err); if (copyFeedbackSpan) copyFeedbackSpan.textContent = 'Kopiëren mislukt.';
+                setTimeout(() => { if(copyFeedbackSpan) copyFeedbackSpan.textContent = ''; }, 3000);
+            });
+        }
+
+        // --- Initialisatie en Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Element refs ophalen
+            inputTextarea = document.getElementById('inputText'); upperCaseBtn = document.getElementById('upperCaseBtn');
+            lowerCaseBtn = document.getElementById('lowerCaseBtn'); titleCaseBtn = document.getElementById('titleCaseBtn');
+            sentenceCaseBtn = document.getElementById('sentenceCaseBtn'); copyBtn = document.getElementById('copyBtn');
+            copyFeedbackSpan = document.getElementById('copyFeedback');
+            // Guard clause
+            if (!inputTextarea || !upperCaseBtn || !lowerCaseBtn || !titleCaseBtn || !sentenceCaseBtn || !copyBtn || !copyFeedbackSpan) { console.error("Een of meer elementen voor de Case Converter zijn niet gevonden!"); return; }
+            // Event listeners koppelen
+            upperCaseBtn.addEventListener('click', convertToUppercase); lowerCaseBtn.addEventListener('click', convertToLowercase);
+            titleCaseBtn.addEventListener('click', convertToTitleCase); sentenceCaseBtn.addEventListener('click', convertToSentenceCase);
+            copyBtn.addEventListener('click', copyText);
+            // Dynamisch jaar in footer
+            const yearSpan = document.getElementById('current-year'); if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+        });
+    </script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>

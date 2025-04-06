@@ -13,15 +13,24 @@
        }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col"> <header class="bg-gray-800 shadow-lg sticky top-0 z-30"> <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a> <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40"> <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
-            </button>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col"> 
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center"> <div class="flex-shrink-0"> <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            </div>
 
-            <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end">
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
                  </div>
+
+            <div class="md:hidden flex-shrink-0"> <button id="menu-toggle" class="text-white focus:outline-none z-40">
+                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                     </svg>
+                 </button>
+             </div>
         </div>
+
+         <div id="mobile-menu-area" class="md:hidden">
+             </div>
     </header>
 
     <main class="flex-grow">
@@ -68,16 +77,9 @@
             <p class="text-gray-300">Telt live het aantal woorden en karakters (met en zonder spaties) in een tekstvak.</p>
         </a>
 
-         <!-- Nieuwe Tool: Tijdzone Converter -->
-        <a href="tijdzone-converter.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
-            <h3 class="text-xl font-semibold text-green-400 mb-2">Tijdzone Converter</h3>
-            <p class="text-gray-300">Converteert een datum en tijd van de ene tijdzone naar de andere.</p>
-        </a>
-
-         <!-- Nieuwe Tool: Datum Calculator -->
-        <a href="datum-calculator.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
-            <h3 class="text-xl font-semibold text-green-400 mb-2">Datum Calculator</h3>
-            <p class="text-gray-300">Voert berekeningen uit met datums, zoals het verschil tussen twee data of een datum in de toekomst/verleden berekenen.</p>
+        <a href="weetjes.html" class="block bg-gray-800 p-6 rounded-lg shadow-md hover:bg-gray-700 transition transform hover:scale-105">
+            <h3 class="text-xl font-semibold text-green-400 mb-2">Weetjes Tool</h3>
+            <p class="text-gray-300">Ontdek elke dag een nieuw verrassend feitje.</p>
         </a>
 
     </div>

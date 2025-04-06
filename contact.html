@@ -3,41 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact - Joey's Hub</title> <!-- Titel aangepast -->
+    <title>Contact - Joey's Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Optioneel: <link rel="stylesheet" href="styles.css"> -->
     <style>
+        /* Stijl voor actieve menu link */
        .nav-link.active {
-           color: #68D391 !important;
+           color: #68D391 !important; /* Tailwind green-400 */
            font-weight: bold !important;
        }
+       /* Verzeker dat label font normaal is */
+        label { font-weight: normal; }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-    <!-- Header - Gekopieerd van aangepaste index.html -->
     <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
-            <button id="menu-toggle" class="md:hidden text-white focus:outline-none z-40">
-                <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
-            </button>
-             <div id="menu-container" class="flex-grow md:flex-grow-0 flex justify-end">
-                 <!-- menu.html content komt hier via JS -->
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center"> <div class="flex-shrink-0"> <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            </div>
+
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
+                 </div>
+
+            <div class="md:hidden flex-shrink-0"> <button id="menu-toggle" class="text-white focus:outline-none z-40">
+                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                     </svg>
+                 </button>
              </div>
         </div>
+
+         <div id="mobile-menu-area" class="md:hidden">
+             </div>
     </header>
 
-    <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center py-12 px-4"> <!-- Centreren van de content + padding -->
-        <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg"> <!-- Padding vergroot -->
-            <h2 class="text-3xl font-bold text-green-400 mb-6 text-center">Neem contact op</h2> <!-- Grotere titel, meer marge, centreren -->
-            <p class="text-gray-300 mb-8 text-center">Heeft u vragen? Vul het formulier in en we nemen contact met u op.</p> <!-- Meer marge, centreren -->
+    <main class="flex-grow container mx-auto px-4 py-12">
 
-            <!-- Contactformulier -->
-            <form id="contact-form" class="space-y-6"> <!-- Meer ruimte tussen velden -->
+        <h2 class="text-3xl font-bold text-center mb-2">Neem contact op</h2>
+        <p class="text-center text-gray-400 mb-6">Heeft u vragen? Vul het formulier in en we nemen contact met u op.</p>
+        <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto mt-6"> <form id="contact-form" class="space-y-6">
                 <div>
                     <label for="naam" class="block text-sm font-medium text-gray-300 mb-1">Naam</label>
                     <input type="text" id="naam" name="naam" placeholder="Uw naam" required
@@ -56,7 +59,7 @@
                 <div>
                     <label for="bericht" class="block text-sm font-medium text-gray-300 mb-1">Bericht</label>
                     <textarea id="bericht" name="bericht" rows="5" placeholder="Uw bericht..." required
-                              class="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"></textarea>
+                              class="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-vertical"></textarea>
                 </div>
                 <div>
                     <button type="submit"
@@ -65,48 +68,41 @@
                     </button>
                  </div>
             </form>
-            <p id="form-status" class="mt-4 text-center text-green-400"></p> <!-- Status message area -->
-        </div>
+            <p id="form-status" class="mt-4 text-center text-green-400 h-4"></p> </div>
     </main>
 
-    <!-- Footer - Gekopieerd van aangepaste index.html -->
-    <footer class="bg-gray-900 text-center py-6 mt-auto"> <!-- mt-auto niet strikt nodig door flex-grow op main -->
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
         <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
     </footer>
 
-    <!-- Eerst main.js voor menu -->
     <script src="main.js"></script>
 
-    <!-- Dan specifiek script voor deze pagina -->
     <script>
         // Dynamisch jaar in footer
-        document.getElementById('current-year').textContent = new Date().getFullYear();
+         const yearSpan = document.getElementById('current-year');
+         if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
         // Contactformulier validatie en (dummy) verzending
         const contactForm = document.getElementById('contact-form');
         const formStatus = document.getElementById('form-status');
 
-        if (contactForm) {
+        if (contactForm && formStatus) { // Controleer of elementen bestaan
             contactForm.addEventListener('submit', function(event) {
                 event.preventDefault(); // Voorkom standaard formulierverzending
-
-                // Hier zou je normaal gesproken de data naar een server sturen (bv. via fetch)
-                // Voor nu, alleen een melding en reset:
                 formStatus.textContent = 'Uw bericht wordt verzonden...';
+                formStatus.classList.remove('text-red-400'); // Reset error kleur
+                formStatus.classList.add('text-green-400');
 
                 // Simuleer een kleine vertraging
                 setTimeout(() => {
                     formStatus.textContent = 'Uw bericht is verzonden! We nemen zo snel mogelijk contact met u op.';
                     contactForm.reset(); // Maak het formulier leeg
-
-                    // Laat het bericht na een paar seconden verdwijnen
-                    setTimeout(() => {
-                        formStatus.textContent = '';
-                    }, 5000);
-
+                    setTimeout(() => { formStatus.textContent = ''; }, 5000); // Laat bericht na 5s verdwijnen
                 }, 1000);
             });
-        }
+        } else {
+             console.error("Contact formulier of status element niet gevonden.");
+         }
     </script>
 
 </body>
