@@ -3,71 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lorem Ipsum Generator - Joey's Hub</title>
+    <title>Lorem Ipsum Generator (Multi-Language) - Joey's Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Stijl voor actieve menu link */
        .nav-link.active {
            color: #68D391 !important; /* Tailwind green-400 */
            font-weight: bold !important;
+           border-bottom: 2px solid #68D391; /* Consistent met main.js */
        }
        textarea {
            resize: vertical;
+           min-height: 150px;
        }
+       /* Styling voor knoppen staat nu direct in HTML */
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
     <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center"> <div class="flex-shrink-0"> <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
-            </div>
-
-            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
-                 </div>
-
-            <div class="md:hidden flex-shrink-0"> <button id="menu-toggle" class="text-white focus:outline-none z-40">
-                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                     </svg>
-                 </button>
-             </div>
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex-shrink-0"><a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a></div>
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center"></div>
+            <div class="md:hidden flex-shrink-0"><button id="menu-toggle" class="text-white focus:outline-none z-40"><svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg></button></div>
         </div>
-
-         <div id="mobile-menu-area" class="md:hidden">
-             </div>
+        <div id="mobile-menu-area" class="md:hidden"></div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-12">
 
         <h2 class="text-3xl font-bold text-center mb-2">Lorem Ipsum Generator</h2>
-        <p class="text-center text-gray-400 mb-6">Genereert Nederlandse dummytekst waarin een bedrijfsnaam verwerkt kan worden.</p>
+        <p class="text-center text-gray-400 mb-6">Genereert direct dummytekst in NL, EN, of DE met uw bedrijfsnaam.</p>
 
         <div class="bg-gray-800 p-6 rounded-lg shadow-md mt-6 max-w-3xl mx-auto">
 
-             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-end">
-                <div class="md:col-span-2">
-                    <label for="companyName" class="block text-sm font-medium text-gray-300 mb-1">Bedrijfsnaam (optioneel)</label>
-                    <input type="text" id="companyName" placeholder="Typ hier de bedrijfsnaam"
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-end">
+                <div>
+                    <label for="companyName" class="block text-sm font-medium text-gray-300 mb-1">Bedrijfsnaam </label>
+                    <input type="text" id="companyName" placeholder="Uw Bedrijf BV"
                            class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none">
                 </div>
                  <div>
-                    <label for="numParagraphs" class="block text-sm font-medium text-gray-300 mb-1">Aantal Alinea's (max 4)</label>
-                    <input type="number" id="numParagraphs" value="3" min="1" max="4" class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none">
+                    <label for="numParagraphs" class="block text-sm font-medium text-gray-300 mb-1">Aantal Alinea's (1-4)</label>
+                    <input type="number" id="numParagraphs" value="1" min="1" max="4"
+                           class="w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none">
                  </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 mb-4">
-                <button id="generateButton" class="flex-1 bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-2 px-6 rounded transition duration-300">
-                    Genereer Tekst
-                </button>
-                <button id="copyButton" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 hidden">
-                    Kopieer naar Klembord
-                </button>
-            </div>
-             <p id="copyFeedback" class="text-sm text-center text-green-400 h-4 mb-2"></p> <div>
-                 <label for="outputLorem" class="block text-sm font-medium text-gray-300 mb-1">Gegenereerde Tekst</label>
-                 <textarea id="outputLorem" rows="12" readonly
-                           class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:outline-none"></textarea>
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6"> <div class="flex-1 min-w-0"> <label class="block text-sm font-medium text-gray-300 mb-1">Selecteer Taal:</label>
+                    <div id="languageSelection" class="flex flex-wrap gap-3">
+                       <button id="langBtnNl" data-lang="nl" class="lang-button px-4 py-2 rounded text-sm font-medium border-2 transition duration-150">Nederlands</button>
+                       <button id="langBtnEn" data-lang="en" class="lang-button px-4 py-2 rounded text-sm font-medium border-2 transition duration-150">Engels</button>
+                       <button id="langBtnDe" data-lang="de" class="lang-button px-4 py-2 rounded text-sm font-medium border-2 transition duration-150">Duits</button>
+                    </div>
+                </div>
+
+                <div class="text-right flex-shrink-0 w-full md:w-auto mt-4 md:mt-0"> <p id="copyFeedback" class="text-sm text-green-400 h-4 mb-1"></p> <button id="copyButton" class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out disabled:bg-gray-500 disabled:cursor-not-allowed hidden">
+                         Kopieer naar Klembord
+                     </button>
+                </div>
+
+            </div> <div>
+                 <label for="outputLorem" class="block text-sm font-medium text-gray-300 mb-1">Gegenereerde Tekst:</label>
+                 <textarea id="outputLorem" rows="12" readonly class="w-full p-3 bg-gray-700 text-white rounded mt-1 border border-gray-600 focus:outline-none"></textarea>
              </div>
 
         </div> </main>
@@ -77,71 +75,77 @@
     </footer>
 
     <script>
-        // --- VASTE ALINEA'S DATABASE ---
-        // Gebruik [bedrijfsnaam] als placeholder
-        const paragraphs = [
-            "Dit is hoe een tekst op de website van [bedrijfsnaam] eruit kan zien. Gewoon even om te laten zien hoe het leest, hoe het oogt en hoe de blokken zich vullen met inhoud. Je leest dit nu als voorbeeld, maar straks staat hier natuurlijk echte content die helemaal past bij wat [bedrijfsnaam] te bieden heeft.",
-            "Op deze plek krijg je straks meer gevoel bij de sfeer, de toon en de boodschap van [bedrijfsnaam]. Voor nu is dit vooral bedoeld om te laten zien hoe een stuk tekst eruitziet in combinatie met het ontwerp. Niet te lang, niet te kort, precies goed om de ruimte op een natuurlijke manier op te vullen.",
-            "Je merkt misschien dat de zinnen logisch in elkaar overlopen en dat er wat afwisseling zit in lengte en ritme. Dat helpt straks ook als de echte teksten worden geschreven: het moet prettig lezen, zonder dat je afdwaalt.",
-            "Voor nu hoef je er verder niks mee te doen — deze tekst is er alleen maar om het geheel wat meer leven te geven. Straks wordt hij vervangen door iets wat echt raakt, iets wat klopt. Maar dit werkt alvast prima als tussenstap."
-        ];
+        // --- Alinea Database per Taal ---
+        const textData = {
+             nl: [ "Dit is hoe een tekst op de website van [bedrijfsnaam] eruit kan zien. Gewoon even om te laten zien hoe het leest, hoe het oogt en hoe de blokken zich vullen met inhoud. Je leest dit nu als voorbeeld, maar straks staat hier natuurlijk echte content die helemaal past bij wat [bedrijfsnaam] te bieden heeft.", "Op deze plek krijg je straks meer gevoel bij de sfeer, de toon en de boodschap van [bedrijfsnaam]. Voor nu is dit vooral bedoeld om te laten zien hoe een stuk tekst eruitziet in combinatie met het ontwerp. Niet te lang, niet te kort, precies goed om de ruimte op een natuurlijke manier op te vullen.", "Je merkt misschien dat de zinnen logisch in elkaar overlopen en dat er wat afwisseling zit in lengte en ritme. Dat helpt straks ook als de echte teksten worden geschreven: het moet prettig lezen, zonder dat je afdwaalt.", "Voor nu hoef je er verder niks mee te doen — deze tekst is er alleen maar om het geheel wat meer leven te geven. Straks wordt hij vervangen door iets wat echt raakt, iets wat klopt. Maar dit werkt alvast prima als tussenstap." ],
+             en: [ "This is how text on the [bedrijfsnaam] website might look. Just to show how it reads, how it appears, and how blocks fill with content. You are reading this as an example now, but soon real content will be here that perfectly matches what [bedrijfsnaam] offers.", "Here you will soon get a better feel for the atmosphere, tone, and message of [bedrijfsnaam]. For now, this is mainly intended to show how a piece of text looks in combination with the design. Not too long, not too short, just right to fill the space naturally.", "You might notice that the sentences flow logically and that there is some variation in length and rhythm. This will also help when the real texts are written: it should be pleasant to read without getting lost.", "For now, you don't need to do anything with this — this text is only here to give the whole thing a bit more life. Soon it will be replaced by something that truly resonates, something that fits. But this works fine as an intermediate step." ],
+             de: [ "So könnte ein Text auf der Website von [bedrijfsnaam] aussehen. Nur um zu zeigen, wie er sich liest, wie er wirkt und wie sich Blöcke mit Inhalt füllen. Sie lesen dies jetzt als Beispiel, aber bald wird hier echter Inhalt stehen, der perfekt zu dem passt, was [bedrijfsnaam] anbietet.", "An dieser Stelle bekommen Sie bald ein besseres Gefühl für die Atmosphäre, den Ton und die Botschaft von [bedrijfsnaam]. Vorerst dient dies hauptsächlich dazu zu zeigen, wie ein Textabschnitt im Zusammenspiel mit dem Design aussieht. Nicht zu lang, nicht zu kurz, genau richtig, um den Raum auf natürliche Weise zu füllen.", "Sie bemerken vielleicht, dass die Sätze logisch ineinander übergehen und eine gewisse Abwechslung in Länge und Rhythmus aufweisen. Das hilft auch später beim Schreiben der echten Texte: Es soll angenehm zu lesen sein, ohne dass man abschweift.", "Vorerst brauchen Sie nichts weiter damit zu tun – dieser Text ist nur dazu da, dem Ganzen etwas mehr Leben einzuhauchen. Bald wird er durch etwas ersetzt, das wirklich anspricht, etwas, das stimmig ist. Aber als Zwischenschritt funktioniert das bereits prima." ]
+          };
 
-        // --- Element Referenties --- (worden gevuld in DOMContentLoaded)
-        let companyNameInput, numParagraphsInput, generateButton, outputLoremTextarea, copyButton, copyFeedbackP;
+        // --- Globale Variabelen ---
+        let currentLanguage = 'nl';
 
-        // --- AANGEPASTE GENERATOR FUNCTIE ---
+        // --- Element Referenties ---
+        let companyNameInput, numParagraphsInput, outputLoremTextarea, copyButton, copyFeedbackP, languageButtons;
+
+        // --- Functies ---
+        function setLanguage(langCode) {
+            console.log('Setting language to:', langCode);
+            if (!textData[langCode] || !languageButtons) { console.error('setLanguage: Missing data or buttons'); return; }
+            currentLanguage = langCode;
+            const activeClassString = 'bg-green-600 border-green-500 text-white cursor-default pointer-events-none';
+            const inactiveClassString = 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500';
+            languageButtons.forEach(btn => {
+                btn.classList.remove(...activeClassString.split(' '), ...inactiveClassString.split(' '));
+                if (btn.dataset.lang === langCode) { btn.classList.add(...activeClassString.split(' ')); }
+                else { btn.classList.add(...inactiveClassString.split(' ')); }
+            });
+            generateLoremIpsum();
+        }
+
         function generateLoremIpsum() {
-            const companyName = companyNameInput.value.trim() || "uw bedrijf"; // Default naam
-            let numParagraphs = parseInt(numParagraphsInput.value) || 1; // Default 1 bij fout
-
-            // Zorg dat het aantal binnen 1-4 blijft
+            console.log('generateLoremIpsum called for language:', currentLanguage);
+            if (!companyNameInput || !numParagraphsInput || !outputLoremTextarea || !copyButton || !copyFeedbackP || !textData[currentLanguage]) { console.error('generateLoremIpsum: Missing elements/data'); return; }
+            console.log('generateLoremIpsum: All elements/data OK.');
+            const companyName = companyNameInput.value.trim() || "uw bedrijf";
+            let numParagraphs = parseInt(numParagraphsInput.value) || 1;
             numParagraphs = Math.max(1, Math.min(numParagraphs, 4));
-            numParagraphsInput.value = numParagraphs; // Update input veld als waarde buiten bereik was
-
-            let resultText = "";
-
-            // Selecteer de eerste 'numParagraphs' alinea's uit de array
-            const selectedParagraphs = paragraphs.slice(0, numParagraphs);
-
-            // Vervang placeholder in elke geselecteerde alinea en voeg samen
-            resultText = selectedParagraphs
-                .map(p => p.replaceAll("[bedrijfsnaam]", companyName)) // Vervang placeholder
-                .join("\n\n"); // Voeg samen met dubbele newline
-
-            outputLoremTextarea.value = resultText; // Zet tekst in textarea
-            if (copyButton) copyButton.classList.remove('hidden'); // Maak kopieerknop zichtbaar
-            if (copyFeedbackP) copyFeedbackP.textContent = ''; // Reset feedback
+             if (parseInt(numParagraphsInput.value) !== numParagraphs) { numParagraphsInput.value = numParagraphs; }
+            const paragraphsForLang = textData[currentLanguage];
+             if (!paragraphsForLang) { console.error("No data for lang:", currentLanguage); return; }
+             const selectedParagraphs = paragraphsForLang.slice(0, numParagraphs);
+            const resultText = selectedParagraphs.map(p => p.replaceAll ? p.replaceAll("[bedrijfsnaam]", companyName) : p.replace(/\[bedrijfsnaam\]/g, companyName) ).join("\n\n");
+             console.log('Generated text length:', resultText.length);
+            outputLoremTextarea.value = resultText.trim();
+            copyButton.classList.remove('hidden');
+            copyFeedbackP.textContent = '';
         }
 
-        // --- Kopieer Functie (ongewijzigd) ---
-        function copyToClipboard() {
-            if (!navigator.clipboard) {
-                try {
-                    outputLoremTextarea.select(); document.execCommand('copy');
-                    if (copyFeedbackP) copyFeedbackP.textContent = 'Tekst gekopieerd (fallback)!';
-                 } catch (err) { console.error('Fallback copy failed', err); if (copyFeedbackP) copyFeedbackP.textContent = 'Kopiëren mislukt.'; } return; }
-            navigator.clipboard.writeText(outputLoremTextarea.value).then(() => {
-                 if (copyButton) { const originalText = copyButton.textContent; copyButton.textContent = 'Gekopieerd!'; copyButton.disabled = true; if (copyFeedbackP) copyFeedbackP.textContent = '';
-                      setTimeout(() => { copyButton.textContent = originalText; copyButton.disabled = false; }, 1500); }
-             }).catch(err => { console.error('Async: Could not copy text: ', err); if (copyFeedbackP) copyFeedbackP.textContent = 'Kopiëren mislukt.'; alert('Kon de tekst niet naar het klembord kopiëren.'); });
-        }
+        function copyToClipboard() { if(!navigator.clipboard){try{outputLoremTextarea.select();document.execCommand('copy');if(copyFeedbackP)copyFeedbackP.textContent='Gekopieerd!(fallback)';}catch(err){console.error('Fallback copy failed',err);if(copyFeedbackP)copyFeedbackP.textContent='Kopiëren mislukt.';}return;}navigator.clipboard.writeText(outputLoremTextarea.value).then(()=>{if(copyButton&&copyFeedbackP){const oT='Kopieer naar Klembord';copyButton.textContent='Gekopieerd!';copyButton.disabled=true;copyFeedbackP.textContent='';setTimeout(()=>{copyButton.textContent=oT;copyButton.disabled=false;},1500);}}).catch(err=>{console.error('Async: Could not copy text: ',err);if(copyFeedbackP)copyFeedbackP.textContent='Kopiëren mislukt.';alert('Kon de tekst niet kopiëren.');setTimeout(()=>{if(copyFeedbackP)copyFeedbackP.textContent='';},3000);}); }
 
-        // --- Initialisatie en Event Listeners (ongewijzigd) ---
+        // --- Initialisatie en Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Loaded');
             companyNameInput = document.getElementById('companyName');
             numParagraphsInput = document.getElementById('numParagraphs');
-            generateButton = document.getElementById('generateButton');
             outputLoremTextarea = document.getElementById('outputLorem');
             copyButton = document.getElementById('copyButton');
             copyFeedbackP = document.getElementById('copyFeedback');
-            if (!companyNameInput || !numParagraphsInput || !generateButton || !outputLoremTextarea || !copyButton || !copyFeedbackP) { console.error("Elementen voor Lorem Ipsum generator niet gevonden!"); return; }
-            generateButton.addEventListener('click', generateLoremIpsum);
+            languageButtons = document.querySelectorAll('#languageSelection .lang-button');
+            console.log('Language buttons found:', languageButtons.length);
+            if (!companyNameInput || !numParagraphsInput || !outputLoremTextarea || !copyButton || !copyFeedbackP || languageButtons.length === 0) {
+                console.error("Een of meer HTML elementen voor de Lorem Ipsum generator zijn NIET gevonden!"); return; }
             copyButton.addEventListener('click', copyToClipboard);
-            const yearSpan = document.getElementById('current-year');
-            if (yearSpan) yearSpan.textContent = new Date().getFullYear();
-            // Optioneel: genereer meteen bij laden?
-            // generateLoremIpsum();
-         });
+            companyNameInput.addEventListener('input', generateLoremIpsum); // Live update
+            numParagraphsInput.addEventListener('input', generateLoremIpsum); // Live update
+            languageButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                     if (!event.target.classList.contains('bg-green-600')) { setLanguage(event.target.dataset.lang); } }); });
+            console.log('Event listeners added');
+            const yearSpan = document.getElementById('current-year'); if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+            console.log('Setting initial language and generating text...');
+            setLanguage(currentLanguage);
+        });
     </script>
 
     <script src="main.js"></script>
