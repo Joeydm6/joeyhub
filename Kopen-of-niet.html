@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Is het te duur of niet? - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijl voor actieve menu link (consistent) */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+           border-bottom: 2px solid #68D391;
+       }
+       /* Stijl voor het resultaat */
+       #resultaatOutput {
+           min-height: 3em; /* Zorg dat er ruimte is voor de tekst */
+           padding-top: 1rem;
+           padding-bottom: 1rem;
+           transition: color 0.3s ease-in-out; /* Vloeiende kleurovergang */
+       }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex-shrink-0"><a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a></div>
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
+                 </div>
+            <div class="md:hidden flex-shrink-0"><button id="menu-toggle" class="text-white focus:outline-none z-40"><svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg></button></div>
+        </div>
+        <div id="mobile-menu-area" class="md:hidden">
+            </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+
+        <h2 class="text-3xl font-bold text-center mb-2">Is het te duur of niet?</h2>
+        <p class="text-center text-gray-400 mb-6 max-w-xl mx-auto">Keuze of je iets wel zou moeten kopen? Vul het bedrag hieronder in en laat 'AI' voor je bepalen!</p>
+
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-lg shadow-md mt-6 max-w-md mx-auto">
+
+            <div class="mb-4">
+                 <label for="bedragInput" class="block text-sm font-medium text-gray-300 mb-1">Bedrag (€)</label>
+                 <input type="number" id="bedragInput"
+                           step="0.01" min="0" placeholder="0,00"
+                           class="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-green-500 outline-none text-lg"
+                           aria-label="Bedrag in euro">
+             </div>
+
+             <button id="berekenBtn" class="w-full bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out">
+                 Bereken
+             </button>
+
+             <div id="resultaatOutput" class="mt-6 text-center text-3xl font-bold">
+                 </div>
+
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bedragInput = document.getElementById('bedragInput');
+            const berekenBtn = document.getElementById('berekenBtn');
+            const resultaatOutput = document.getElementById('resultaatOutput');
+
+            // Check of elementen bestaan
+             if (!bedragInput || !berekenBtn || !resultaatOutput) {
+                 console.error("Een of meer elementen voor de 'Te Duur' tool zijn niet gevonden!");
+                 // Optioneel: Toon fout aan gebruiker
+                  const mainContent = document.querySelector('main');
+                 if(mainContent) mainContent.innerHTML = '<p class="text-red-500 text-center">Fout bij laden van de tool.</p>';
+                 return;
+             }
+
+            function berekenBeslissing() {
+                const waarde = bedragInput.value;
+                resultaatOutput.textContent = ''; // Reset output
+                resultaatOutput.classList.remove('text-red-500', 'text-green-500', 'text-yellow-500'); // Reset kleuren
+
+                // Check of er iets is ingevuld
+                if (waarde.trim() === '') {
+                    resultaatOutput.textContent = 'Voer een bedrag in.';
+                    resultaatOutput.classList.add('text-yellow-500', 'text-lg', 'font-normal'); // Kleinere tekst voor melding
+                    return;
+                }
+
+                 // Converteer naar getal (vervang komma door punt voor parseFloat)
+                 const bedrag = parseFloat(waarde.replace(',', '.'));
+
+
+                // Check of het een geldig getal is
+                if (isNaN(bedrag) || bedrag < 0) {
+                    resultaatOutput.textContent = 'Voer een geldig positief getal in.';
+                    resultaatOutput.classList.add('text-yellow-500', 'text-lg', 'font-normal'); // Kleinere tekst voor melding
+                    return;
+                }
+
+                // Bepaal het resultaat
+                if (bedrag > 50) {
+                    resultaatOutput.textContent = 'NEE DOE HET NIET!';
+                    resultaatOutput.classList.add('text-red-500');
+                } else {
+                    resultaatOutput.textContent = 'Dit mag, go treat yourself!';
+                    resultaatOutput.classList.add('text-green-500');
+                }
+                 // Reset font-normal als het eerder was gezet
+                 resultaatOutput.classList.remove('text-lg', 'font-normal');
+            }
+
+            berekenBtn.addEventListener('click', berekenBeslissing);
+
+            // Optioneel: bereken ook bij Enter in het invoerveld
+            bedragInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Voorkom form submit (als die er was)
+                    berekenBeslissing();
+                }
+            });
+
+            // Dynamisch jaar in footer
+            const yearSpan = document.getElementById('current-year');
+            if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+        });
+    </script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>
