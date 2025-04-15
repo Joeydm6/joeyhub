@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Behoud de actieve link stijl voor consistentie */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+           border-bottom: 2px solid #68D391; /* Consistent met main.js */
+       }
+       /* Minimale hoogte en resize voor textarea (niet direct nodig hier, maar kan blijven) */
+       textarea {
+           resize: vertical;
+           min-height: 150px;
+       }
+       /* Basis styling voor settings input fields */
+       .settings-input {
+           @apply w-16 p-1.5 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-green-500 outline-none text-center;
+       }
+       /* Styling voor knoppen wordt direct met Tailwind gedaan */
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex-shrink-0"><a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a></div>
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center">
+                 </div>
+            <div class="md:hidden flex-shrink-0"><button id="menu-toggle" class="text-white focus:outline-none z-40"><svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg></button></div>
+        </div>
+        <div id="mobile-menu-area" class="md:hidden">
+            </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12 flex justify-center items-center">
+        <div class="pomodoro-timer bg-gray-800 p-6 sm:p-8 rounded-lg shadow-md text-center w-full max-w-sm" id="pomodoro-app" data-mode="work"> <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-green-400">Pomodoro Timer</h2>
+
+            <div class="mode-display text-lg sm:text-xl mb-3 text-gray-300 capitalize" id="mode-display">Werk</div>
+
+            <div class="progress-bar-container w-full h-2.5 bg-gray-700 rounded-full overflow-hidden mb-4">
+                <div class="progress-bar h-full w-full bg-green-500 rounded-full transition-all duration-500 ease-linear" id="progress-bar"></div>
+            </div>
+
+            <div class="time-display text-5xl sm:text-6xl font-mono mb-3 text-white" id="time-display">25:00</div>
+            <div class="cycle-display text-xs sm:text-sm mb-5 text-gray-400" id="cycle-display">Voltooide Pomodoros: 0</div>
+
+            <div class="controls flex justify-center gap-4 mb-6">
+                <button id="start-pause" class="bg-green-500 hover:bg-green-600 text-gray-900 font-bold py-2 px-6 rounded-md transition duration-300 text-base sm:text-lg">Start</button>
+                <button id="reset" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 px-6 rounded-md transition duration-300 text-base sm:text-lg">Reset</button>
+            </div>
+
+            <details class="settings bg-gray-700 p-4 rounded-md">
+                 <summary class="cursor-pointer text-center font-semibold text-gray-300 hover:text-white mb-3">Instellingen</summary>
+                <div class="space-y-3 text-sm">
+                     <div class="flex justify-between items-center">
+                         <label for="work-duration" class="text-gray-300">Werkduur (min):</label>
+                         <input type="number" id="work-duration" min="1" value="25" class="settings-input">
+                     </div>
+                     <div class="flex justify-between items-center">
+                         <label for="short-break-duration" class="text-gray-300">Korte Pauze (min):</label>
+                         <input type="number" id="short-break-duration" min="1" value="5" class="settings-input">
+                     </div>
+                     <div class="flex justify-between items-center">
+                         <label for="long-break-duration" class="text-gray-300">Lange Pauze (min):</label>
+                         <input type="number" id="long-break-duration" min="1" value="15" class="settings-input">
+                     </div>
+                     <div class="flex justify-between items-center">
+                         <label for="cycles" class="text-gray-300">Pomodoros tot lange pauze:</label>
+                         <input type="number" id="cycles" min="1" value="4" class="settings-input">
+                     </div>
+                     <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                          <button id="save-settings" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition text-xs">Opslaan</button>
+                          <button id="request-notification" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition text-xs">Notificaties Toestaan</button>
+                     </div>
+                </div>
+            </details>
+
+             <audio id="alarm-sound" src="alarm.mp3" preload="auto"></audio>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // Encapsulate script to avoid global scope pollution
+        (function() {
+            // DOM Element References (haal ze hier op, binnen de IIFE)
+            let timeDisplay, modeDisplay, cycleDisplay, startPauseButton, resetButton,
+                workDurationInput, shortBreakDurationInput, longBreakDurationInput,
+                cyclesInput, saveSettingsButton, requestNotificationButton, alarmSound,
+                progressBar, timerContainer;
+
+            // State Variables
+            let timerInterval = null;
+            let timeLeft = 0; // in seconden
+            let totalTime = 0; // Total time for current mode in seconds for progress bar
+            let mode = 'work'; // 'work', 'shortBreak', 'longBreak'
+            let pomodorosCompleted = 0;
+            let isRunning = false;
+            let settings = {
+                workDuration: 25,
+                shortBreakDuration: 5,
+                longBreakDuration: 15,
+                cyclesUntilLongBreak: 4,
+                notificationsEnabled: false // Start disabled until permission granted
+            };
+
+            // --- Functies (Load Settings, Save Settings, Format Time etc. - zelfde als vorige code) ---
+
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('pomodoroSettings');
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                        // Fallback voor oude settings zonder notificationsEnabled
+                        if (typeof settings.notificationsEnabled === 'undefined') {
+                             settings.notificationsEnabled = false;
+                         }
+                    } catch (e) {
+                         console.error("Kon pomodoro settings niet parsen:", e);
+                         // Reset naar defaults bij parse error
+                         settings = { workDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, cyclesUntilLongBreak: 4, notificationsEnabled: false };
+                         localStorage.removeItem('pomodoroSettings'); // Verwijder corrupte data
+                     }
+                }
+                 // Update input fields met geladen/default settings (check of elementen bestaan)
+                 if(workDurationInput) workDurationInput.value = settings.workDuration;
+                 if(shortBreakDurationInput) shortBreakDurationInput.value = settings.shortBreakDuration;
+                 if(longBreakDurationInput) longBreakDurationInput.value = settings.longBreakDuration;
+                 if(cyclesInput) cyclesInput.value = settings.cyclesUntilLongBreak;
+
+                 // Check initial notification permission status
+                if ('Notification' in window) {
+                    if (Notification.permission === 'granted') {
+                        settings.notificationsEnabled = true; // Zorg dat interne setting klopt
+                        if (requestNotificationButton) {
+                             requestNotificationButton.textContent = "Notificaties Aan";
+                             requestNotificationButton.disabled = true;
+                         }
+                    } else if (Notification.permission === 'denied') {
+                        settings.notificationsEnabled = false;
+                        if (requestNotificationButton) {
+                             requestNotificationButton.textContent = "Notificaties Geblok.";
+                             requestNotificationButton.disabled = true;
+                         }
+                    } else {
+                         settings.notificationsEnabled = false; // Start uit indien 'default'
+                        if (requestNotificationButton) {
+                             requestNotificationButton.textContent = "Notificaties Toestaan";
+                             requestNotificationButton.disabled = false;
+                         }
+                    }
+                } else if (requestNotificationButton) {
+                     requestNotificationButton.style.display = 'none'; // Verberg knop als niet ondersteund
+                }
+            }
+
+            function saveSettings() {
+                 // Check of elementen bestaan voordat je .value leest
+                settings.workDuration = workDurationInput ? (parseInt(workDurationInput.value, 10) || 25) : 25;
+                settings.shortBreakDuration = shortBreakDurationInput ? (parseInt(shortBreakDurationInput.value, 10) || 5) : 5;
+                settings.longBreakDuration = longBreakDurationInput ? (parseInt(longBreakDurationInput.value, 10) || 15) : 15;
+                settings.cyclesUntilLongBreak = cyclesInput ? (parseInt(cyclesInput.value, 10) || 4) : 4;
+
+                 // Behoud de notificationsEnabled status bij opslaan
+                 // Deze wordt alleen gewijzigd door de permissie-check/vraag
+
+                localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+                alert('Instellingen opgeslagen!');
+                // Reset timer to apply new settings if it's not running
+                if (!isRunning) {
+                    resetTimer();
+                }
+            }
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+             function updateProgressBar() {
+                 if (!progressBar) return;
+                 const percentage = totalTime > 0 ? (timeLeft / totalTime) * 100 : 100;
+                 progressBar.style.width = `${Math.max(0, Math.min(100, percentage))}%`; // Zorg dat het tussen 0 en 100 blijft
+
+                 // Pas kleur progress bar aan op basis van modus
+                 progressBar.classList.remove('bg-green-500', 'bg-blue-500', 'bg-indigo-500'); // Verwijder oude kleuren
+                 if (mode === 'work') {
+                     progressBar.classList.add('bg-green-500');
+                 } else if (mode === 'shortBreak') {
+                     progressBar.classList.add('bg-blue-500');
+                 } else { // longBreak
+                     progressBar.classList.add('bg-indigo-500');
+                 }
+             }
+
+            function updateDisplay() {
+                 if(timeDisplay) timeDisplay.textContent = formatTime(timeLeft);
+
+                 // Vertaal/formatteer modus naam voor weergave
+                 let displayMode = 'Onbekend';
+                 if (mode === 'work') displayMode = 'Werk';
+                 else if (mode === 'shortBreak') displayMode = 'Korte Pauze';
+                 else if (mode === 'longBreak') displayMode = 'Lange Pauze';
+                 if(modeDisplay) modeDisplay.textContent = displayMode;
+
+                 if(cycleDisplay) cycleDisplay.textContent = `Voltooide Pomodoros: ${pomodorosCompleted}`;
+
+                 // Update container attribute voor CSS styling/kleur progress bar
+                 if(timerContainer) timerContainer.setAttribute('data-mode', mode);
+                 updateProgressBar(); // Update progress bar
+            }
+
+            function playSound() {
+                if (!alarmSound) return;
+                alarmSound.currentTime = 0; // Rewind to start
+                alarmSound.play().catch(e => console.warn("Kon geluid niet afspelen (mogelijk gebruikersinteractie nodig):", e));
+            }
+
+             function showNotification(message) {
+                 if (!settings.notificationsEnabled || !('Notification' in window)) return;
+
+                 if (Notification.permission === 'granted') {
+                     new Notification("Pomodoro Timer", {
+                         body: message,
+                         // icon: 'images/pomodoro-icon.png' // Optioneel: voeg een pad naar een icoon toe
+                     });
+                 }
+             }
+
+            function switchMode(newMode) {
+                mode = newMode;
+                let durationMinutes;
+                switch (newMode) {
+                    case 'shortBreak':
+                        durationMinutes = settings.shortBreakDuration;
+                        break;
+                    case 'longBreak':
+                        durationMinutes = settings.longBreakDuration;
+                        break;
+                    case 'work':
+                    default:
+                        durationMinutes = settings.workDuration;
+                        break;
+                }
+                totalTime = durationMinutes * 60;
+                timeLeft = totalTime;
+                updateDisplay(); // Update display direct na modus switch
+            }
+
+            function tick() {
+                if (timeLeft <= 0) {
+                     // Check of er een interval draait om dubbele uitvoering te voorkomen
+                     if (!timerInterval) return;
+
+                    playSound(); // Speel geluid
+
+                    let notificationMessage = '';
+                    let nextMode = 'work'; // Default naar werk
+
+                    if (mode === 'work') {
+                        pomodorosCompleted++;
+                        const isLongBreakTime = pomodorosCompleted > 0 && pomodorosCompleted % settings.cyclesUntilLongBreak === 0;
+                        nextMode = isLongBreakTime ? 'longBreak' : 'shortBreak';
+                        notificationMessage = isLongBreakTime
+                            ? `Tijd voor een lange pauze! (${settings.longBreakDuration} min)`
+                            : `Tijd voor een korte pauze! (${settings.shortBreakDuration} min)`;
+                    } else { // End of a break
+                        nextMode = 'work';
+                        notificationMessage = `Pauze voorbij! Tijd om te werken (${settings.workDuration} min).`;
+                    }
+
+                    showNotification(notificationMessage);
+                    switchMode(nextMode); // Stel nieuwe modus en tijd in
+
+                    // Pauzeer de timer automatisch na een cyclus
+                     pauseTimer();
+                     if(startPauseButton) startPauseButton.textContent = "Start";
+
+                     // Update display direct na pauzeren en modus switch
+                     updateDisplay();
+                     return; // Stop de tick loop voor deze seconde
+                }
+
+                timeLeft--;
+                updateDisplay(); // Update tijd en progress bar elke seconde
+            }
+
+            function startTimer() {
+                 // Check of er elementen zijn
+                 if (!startPauseButton) return;
+                if (isRunning) return;
+                isRunning = true;
+                startPauseButton.textContent = "Pauze";
+
+                // Stel totalTime in als deze nog niet is gezet (bij eerste start of na reset)
+                 if (totalTime <= 0 || timeLeft === totalTime) {
+                      switchMode(mode); // Zorgt dat totalTime correct is ingesteld
+                 }
+                 updateProgressBar(); // Update bar meteen
+
+                // Clear een eventueel bestaand interval voor de zekerheid
+                 clearInterval(timerInterval);
+                timerInterval = setInterval(tick, 1000);
+            }
+
+            function pauseTimer() {
+                // Check of er elementen zijn
+                 if (!startPauseButton) return;
+                if (!isRunning) return;
+                isRunning = false;
+                startPauseButton.textContent = "Start";
+                clearInterval(timerInterval);
+                timerInterval = null; // Belangrijk om aan te geven dat er geen interval meer loopt
+            }
+
+            function resetTimer() {
+                pauseTimer(); // Stop timer
+                // Reset naar de duur van de HUIDIGE modus
+                 let durationMinutes;
+                 switch (mode) {
+                     case 'shortBreak': durationMinutes = settings.shortBreakDuration; break;
+                     case 'longBreak': durationMinutes = settings.longBreakDuration; break;
+                     case 'work': default: durationMinutes = settings.workDuration; break;
+                 }
+                 totalTime = durationMinutes * 60;
+                 timeLeft = totalTime;
+
+                 // Optioneel: Reset naar 'work' modus bij reset? Huidige logica behoudt modus.
+                 // switchMode('work'); // Uncomment om altijd naar 'work' te resetten
+
+                 updateDisplay(); // Update weergave
+                 if(startPauseButton) startPauseButton.textContent = "Start";
+            }
+
+            function handleNotificationRequest() {
+                if (!('Notification' in window)) {
+                    alert("Browser ondersteunt geen notificaties.");
+                    return;
+                }
+
+                if (Notification.permission === 'granted') {
+                    alert("Notificaties zijn al toegestaan.");
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            settings.notificationsEnabled = true;
+                            if(requestNotificationButton) {
+                                 requestNotificationButton.textContent = "Notificaties Aan";
+                                 requestNotificationButton.disabled = true;
+                             }
+                            showNotification("Notificaties zijn ingeschakeld!");
+                            // Sla de bijgewerkte settings op (incl. enabled status)
+                             localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+                        } else {
+                            settings.notificationsEnabled = false;
+                            localStorage.setItem('pomodoroSettings', JSON.stringify(settings)); // Sla ook 'uit' status op
+                            alert("Notificaties niet toegestaan.");
+                        }
+                    });
+                } else { // Permission is 'denied'
+                     alert("Notificaties zijn geblokkeerd in de browserinstellingen. U moet dit handmatig aanpassen.");
+                     if(requestNotificationButton) {
+                         requestNotificationButton.textContent = "Notificaties Geblok.";
+                         requestNotificationButton.disabled = true;
+                     }
+                }
+            }
+
+
+            // --- Initialisatie en Event Listeners ---
+            document.addEventListener('DOMContentLoaded', () => {
+                 // DOM Elementen ophalen
+                 timeDisplay = document.getElementById('time-display');
+                 modeDisplay = document.getElementById('mode-display');
+                 cycleDisplay = document.getElementById('cycle-display');
+                 startPauseButton = document.getElementById('start-pause');
+                 resetButton = document.getElementById('reset');
+                 workDurationInput = document.getElementById('work-duration');
+                 shortBreakDurationInput = document.getElementById('short-break-duration');
+                 longBreakDurationInput = document.getElementById('long-break-duration');
+                 cyclesInput = document.getElementById('cycles');
+                 saveSettingsButton = document.getElementById('save-settings');
+                 requestNotificationButton = document.getElementById('request-notification');
+                 alarmSound = document.getElementById('alarm-sound');
+                 progressBar = document.getElementById('progress-bar');
+                 timerContainer = document.getElementById('pomodoro-app');
+
+                 // Check of alle essentiële elementen bestaan
+                 if (!timeDisplay || !modeDisplay || !cycleDisplay || !startPauseButton || !resetButton || !workDurationInput || !shortBreakDurationInput || !longBreakDurationInput || !cyclesInput || !saveSettingsButton || !requestNotificationButton || !alarmSound || !progressBar || !timerContainer) {
+                     console.error("Een of meer Pomodoro elementen zijn niet gevonden!");
+                     // Toon eventueel een foutmelding aan de gebruiker
+                     if(timerContainer) timerContainer.innerHTML = '<p class="text-red-500 text-center p-4">Fout: Kon de Pomodoro Timer niet laden.</p>';
+                     return; // Stop verdere uitvoering als elementen missen
+                 }
+
+                 // Event Listeners koppelen
+                 startPauseButton.addEventListener('click', () => { isRunning ? pauseTimer() : startTimer(); });
+                 resetButton.addEventListener('click', resetTimer);
+                 saveSettingsButton.addEventListener('click', saveSettings);
+                 requestNotificationButton.addEventListener('click', handleNotificationRequest);
+
+                 // Dynamisch jaar in footer (als die er is)
+                 const yearSpan = document.getElementById('current-year');
+                 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+                 // Initiële setup
+                 loadSettings();
+                 switchMode('work'); // Start in 'work' mode & set initial time
+
+            }); // Einde DOMContentLoaded
+
+        })(); // End of IIFE encapsulation
+    </script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>

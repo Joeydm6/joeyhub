@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taakbeheer - Joey's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Stijl voor actieve menu link */
+       .nav-link.active {
+           color: #68D391 !important; /* Tailwind green-400 */
+           font-weight: bold !important;
+       }
+       .task-dragging {
+           opacity: 0.5;
+       }
+       .drop-zone-active {
+           border: 2px dashed #68D391;
+       }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex-shrink-0">
+                <a href="index.html" class="text-2xl font-bold text-green-400 hover:text-green-300 transition">Joey's Hub</a>
+            </div>
+            <div id="menu-container" class="hidden md:flex flex-1 justify-center items-center"></div>
+            <div class="md:hidden flex-shrink-0">
+                <button id="menu-toggle" class="text-white focus:outline-none z-40">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu-area" class="md:hidden"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-bold">Taakbeheer</h2>
+                <p class="text-gray-400">Beheer je taken efficiënt</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="viewToggle" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition">
+                    <i class="fas fa-th-list mr-2"></i>Wissel Weergave
+                </button>
+                <button id="addTaskBtn" class="bg-green-500 hover:bg-green-600 text-gray-900 px-4 py-2 rounded-md font-bold transition">
+                    <i class="fas fa-plus mr-2"></i>Nieuwe Taak
+                </button>
+            </div>
+        </div>
+
+        <!-- View Container -->
+        <div id="viewContainer">
+            <!-- Board View -->
+            <div id="boardView" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Todo Column -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg" id="todoColumn">
+                    <h2 class="text-lg font-semibold mb-4 text-green-500">Te Doen</h2>
+                    <div id="todoTasks" class="space-y-4 min-h-[100px]"></div>
+                </div>
+
+                <!-- In Progress Column -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg" id="inProgressColumn">
+                    <h2 class="text-lg font-semibold mb-4 text-orange-500">In Uitvoering</h2>
+                    <div id="inProgressTasks" class="space-y-4 min-h-[100px]"></div>
+                </div>
+
+                <!-- Done Column -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg" id="doneColumn">
+                    <h2 class="text-lg font-semibold mb-4 text-yellow-500">Voltooid</h2>
+                    <div id="doneTasks" class="space-y-4 min-h-[100px]"></div>
+                </div>
+            </div>
+
+            <!-- List View (initially hidden) -->
+            <div id="listView" class="hidden bg-gray-800 rounded-lg shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Naam</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Prioriteit</th>
+                                <th class="px-4 py-3 text-left">Deadline</th>
+                                <th class="px-4 py-3 text-left">Acties</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden">
+        <div class="relative top-20 mx-auto p-6 border border-gray-700 w-[480px] shadow-lg rounded-lg bg-gray-800">
+            <div class="mb-6">
+                <h3 class="text-xl font-bold text-white mb-1">Nieuwe Taak</h3>
+                <p class="text-gray-400 text-sm">Vul de details in voor je nieuwe taak</p>
+            </div>
+            <form id="taskForm" class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Titel</label>
+                        <input type="text" id="taskTitle" required 
+                            class="w-full px-3 py-2 rounded-md bg-gray-700 border-gray-600 text-white shadow-sm 
+                            focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
+                            placeholder="Voer een titel in">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Beschrijving</label>
+                        <textarea id="taskDescription" rows="3" 
+                            class="w-full px-3 py-2 rounded-md bg-gray-700 border-gray-600 text-white shadow-sm 
+                            focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
+                            placeholder="Optionele beschrijving van de taak"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Status</label>
+                        <select id="taskStatus" required 
+                            class="w-full px-3 py-2 rounded-md bg-gray-700 border-gray-600 text-white shadow-sm 
+                            focus:border-green-500 focus:ring-green-500">
+                            <option value="todo" class="bg-green-500/10 text-green-500">Te doen</option>
+                            <option value="in_progress" class="bg-orange-500/10 text-orange-500">In uitvoering</option>
+                            <option value="done" class="bg-yellow-500/10 text-yellow-500">Voltooid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Prioriteit</label>
+                        <select id="taskPriority" required 
+                            class="w-full px-3 py-2 rounded-md bg-gray-700 border-gray-600 text-white shadow-sm 
+                            focus:border-green-500 focus:ring-green-500">
+                            <option value="low" class="bg-green-900 text-green-200">Laag</option>
+                            <option value="medium" class="bg-yellow-900 text-yellow-200">Gemiddeld</option>
+                            <option value="high" class="bg-red-900 text-red-200">Hoog</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Deadline</label>
+                        <input type="datetime-local" id="taskDueDate" 
+                            class="w-full px-3 py-2 rounded-md bg-gray-700 border-gray-600 text-white shadow-sm 
+                            focus:border-green-500 focus:ring-green-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                    <button type="button" id="cancelTask" 
+                        class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 
+                        rounded-md transition">
+                        Annuleren
+                    </button>
+                    <button type="submit" 
+                        class="px-4 py-2 text-sm font-medium text-gray-900 bg-green-500 hover:bg-green-600 
+                        rounded-md transition flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Opslaan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-center py-6 mt-auto">
+        <p class="text-gray-400">© <span id="current-year"></span> Joey's Hub. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentView = localStorage.getItem('currentView') || 'board';
+        let editingTask = null;
+
+        // DOM Elements
+        const viewToggle = document.getElementById('viewToggle');
+        const boardView = document.getElementById('boardView');
+        const listView = document.getElementById('listView');
+        const taskList = document.getElementById('taskList');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskModal = document.getElementById('taskModal');
+        const taskForm = document.getElementById('taskForm');
+        const cancelTask = document.getElementById('cancelTask');
+
+        // Event Listeners
+        viewToggle.addEventListener('click', toggleView);
+        addTaskBtn.addEventListener('click', () => taskModal.classList.remove('hidden'));
+        cancelTask.addEventListener('click', () => {
+            taskModal.classList.add('hidden');
+            taskForm.reset();
+            editingTask = null;
+        });
+
+        // View Toggle Function
+        function toggleView() {
+            currentView = currentView === 'board' ? 'list' : 'board';
+            localStorage.setItem('currentView', currentView);
+            updateView();
+        }
+
+        function updateView() {
+            if (currentView === 'board') {
+                boardView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                viewToggle.innerHTML = '<i class="fas fa-th-list mr-2"></i>Toon Lijst';
+            } else {
+                boardView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                viewToggle.innerHTML = '<i class="fas fa-columns mr-2"></i>Toon Bord';
+            }
+            renderTasks();
+        }
+
+        // Task Form Handler
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const taskData = {
+                id: editingTask ? editingTask.id : Date.now(),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                priority: document.getElementById('taskPriority').value,
+                status: document.getElementById('taskStatus').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                createdAt: editingTask ? editingTask.createdAt : new Date().toISOString()
+            };
+            
+            // Verwijder de oude taak als we aan het bewerken zijn
+            if (editingTask) {
+                tasks = tasks.filter(t => t.id !== editingTask.id);
+            }
+            
+            tasks.push(taskData);
+            saveTasks();
+            renderTasks();
+            taskModal.classList.add('hidden');
+            taskForm.reset();
+            editingTask = null; // Reset de bewerkende taak
+        });
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Render tasks based on current view
+        function renderTasks() {
+            if (currentView === 'board') {
+                renderBoardView();
+            } else {
+                renderListView();
+            }
+        }
+
+        // Board View Rendering
+        function renderBoardView() {
+            const columns = {
+                todo: document.getElementById('todoTasks'),
+                in_progress: document.getElementById('inProgressTasks'),
+                done: document.getElementById('doneTasks')
+            };
+
+            // Clear all columns
+            Object.values(columns).forEach(column => column.innerHTML = '');
+
+            // Sort and render tasks
+            const sortedTasks = [...tasks].sort((a, b) => {
+                const priorityOrder = { high: 0, medium: 1, low: 2 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+
+            sortedTasks.forEach(task => {
+                const taskElement = createBoardTaskElement(task);
+                columns[task.status]?.appendChild(taskElement);
+            });
+
+            // Add drag and drop handlers to columns
+            Object.entries(columns).forEach(([status, column]) => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('drop', (e) => handleDrop(e, status));
+                column.addEventListener('dragenter', handleDragEnter);
+                column.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        // List View Rendering
+        function renderListView() {
+            taskList.innerHTML = '';
+            
+            // Groepeer taken per status
+            const tasksByStatus = {
+                todo: { title: 'Te doen', tasks: [], color: 'text-green-400', bgColor: 'bg-green-500/10' },
+                in_progress: { title: 'In uitvoering', tasks: [], color: 'text-orange-400', bgColor: 'bg-orange-500/10' },
+                done: { title: 'Voltooid', tasks: [], color: 'text-yellow-400', bgColor: 'bg-yellow-500/10' }
+            };
+
+            // Sorteer taken op prioriteit binnen elke status groep
+            tasks.forEach(task => {
+                if (tasksByStatus[task.status]) {
+                    tasksByStatus[task.status].tasks.push(task);
+                }
+            });
+
+            // Create a grid container for the status columns
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-6';
+            taskList.appendChild(gridContainer);
+
+            // Render elke statusgroep
+            Object.entries(tasksByStatus).forEach(([status, { title, tasks, color, bgColor }]) => {
+                // Create a container for each status
+                const statusContainer = document.createElement('div');
+                statusContainer.className = 'flex flex-col h-full bg-gray-800 rounded-lg shadow-lg overflow-hidden';
+                statusContainer.dataset.status = status;
+
+                // Add drag and drop handlers to the container
+                statusContainer.addEventListener('dragover', handleDragOver);
+                statusContainer.addEventListener('drop', (e) => handleDrop(e, status));
+                statusContainer.addEventListener('dragenter', handleDragEnter);
+                statusContainer.addEventListener('dragleave', handleDragLeave);
+
+                // Create header
+                const header = document.createElement('div');
+                header.className = `px-4 py-3 ${bgColor} border-b border-gray-700`;
+                header.innerHTML = `
+                    <h3 class="font-bold ${color} flex items-center">
+                        <span class="mr-2">${title}</span>
+                        <span class="text-sm text-gray-400">(${tasks.length})</span>
+                    </h3>
+                `;
+                statusContainer.appendChild(header);
+
+                // Create table for tasks
+                const table = document.createElement('table');
+                table.className = 'w-full flex-1';
+                table.innerHTML = `
+                    <thead class="bg-gray-700/50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Naam</th>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Prioriteit</th>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Deadline</th>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Acties</th>
+                        </tr>
+                    </thead>
+                    <tbody class="task-container"></tbody>
+                `;
+
+                const taskContainer = table.querySelector('tbody');
+
+                // Sort tasks by priority within the status group
+                const sortedTasks = tasks.sort((a, b) => {
+                    const priorityOrder = { high: 0, medium: 1, low: 2 };
+                    return priorityOrder[a.priority] - priorityOrder[b.priority];
+                });
+
+                // Render tasks for this status
+                if (sortedTasks.length > 0) {
+                    sortedTasks.forEach(task => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-gray-700/50 hover:bg-gray-700/30 transition cursor-move group';
+                        row.draggable = true;
+                        row.dataset.id = task.id;
+                        row.onclick = () => editTask(task.id);
+
+                        // Add drag event listeners
+                        row.addEventListener('dragstart', handleDragStart);
+                        row.addEventListener('dragend', handleDragEnd);
+
+                        const priorityColors = {
+                            high: 'bg-red-500/20 text-red-400',
+                            medium: 'bg-yellow-500/20 text-yellow-400',
+                            low: 'bg-green-500/20 text-green-400'
+                        };
+
+                        row.innerHTML = `
+                            <td class="px-4 py-3 text-white group-hover:text-green-400 transition">${task.title}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded-full text-xs ${priorityColors[task.priority]}">
+                                    ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-400 group-hover:text-gray-300 transition">
+                                ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition">
+                                    <button onclick="event.stopPropagation(); editTask(${task.id})" class="text-gray-400 hover:text-green-400 transition">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="event.stopPropagation(); deleteTask(${task.id})" class="text-gray-400 hover:text-red-400 transition">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        taskContainer.appendChild(row);
+                    });
+                } else {
+                    // Toon een lege rij voor statussen zonder taken
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.className = 'border-b border-gray-700/50';
+                    emptyRow.innerHTML = `
+                        <td colspan="4" class="px-4 py-6 text-center text-gray-500 italic">
+                            Geen taken in deze status
+                        </td>
+                    `;
+                    taskContainer.appendChild(emptyRow);
+                }
+
+                statusContainer.appendChild(table);
+                gridContainer.appendChild(statusContainer);
+            });
+
+            // Toon een bericht als er helemaal geen taken zijn
+            if (tasks.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'col-span-3 text-center py-12 text-gray-400';
+                emptyMessage.innerHTML = 'Geen taken gevonden. Klik op "Nieuwe Taak" om te beginnen.';
+                gridContainer.appendChild(emptyMessage);
+            }
+        }
+
+        // Create Board Task Element
+        function createBoardTaskElement(task) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-700 p-4 rounded-lg shadow hover:bg-gray-600 transition cursor-move';
+            div.draggable = true;
+            div.dataset.id = task.id;
+
+            const priorityColors = {
+                high: 'bg-red-900 text-red-200',
+                medium: 'bg-yellow-900 text-yellow-200',
+                low: 'bg-green-900 text-green-200'
+            };
+
+            div.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <h3 class="font-medium text-white">${task.title}</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="editTask(${task.id})" class="text-gray-400 hover:text-green-400 transition">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="text-gray-400 hover:text-red-400 transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-300 mt-2">${task.description}</p>
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-xs px-2 py-1 rounded-full ${priorityColors[task.priority]}">
+                        ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </span>
+                    <span class="text-xs text-gray-400">
+                        ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                    </span>
+                </div>
+            `;
+
+            // Add drag event listeners
+            div.addEventListener('dragstart', handleDragStart);
+            div.addEventListener('dragend', handleDragEnd);
+
+            return div;
+        }
+
+        // Drag and Drop Handlers
+        function handleDragStart(e) {
+            e.target.classList.add('task-dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('task-dragging');
+            document.querySelectorAll('.drop-zone-active').forEach(zone => {
+                zone.classList.remove('drop-zone-active');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            const column = e.target.closest('.bg-gray-800');
+            if (column) {
+                column.classList.add('drop-zone-active');
+            }
+        }
+
+        function handleDragLeave(e) {
+            const column = e.target.closest('.bg-gray-800');
+            if (column) {
+                column.classList.remove('drop-zone-active');
+            }
+        }
+
+        function handleDrop(e, newStatus) {
+            e.preventDefault();
+            const column = e.target.closest('.bg-gray-800');
+            if (column) {
+                column.classList.remove('drop-zone-active');
+            }
+
+            const taskId = e.dataTransfer.getData('text/plain');
+            const task = tasks.find(t => t.id === parseInt(taskId));
+            
+            if (task && task.status !== newStatus) {
+                task.status = newStatus;
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        // Update Task Status (for list view)
+        function updateTaskStatus(taskId, newStatus) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && task.status !== newStatus) {
+                task.status = newStatus;
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        // Edit Task
+        window.editTask = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                editingTask = task; // Sla de te bewerken taak op
+                document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskDescription').value = task.description;
+                document.getElementById('taskPriority').value = task.priority;
+                document.getElementById('taskStatus').value = task.status;
+                document.getElementById('taskDueDate').value = task.dueDate || '';
+                taskModal.classList.remove('hidden');
+            }
+        };
+
+        // Delete Task
+        window.deleteTask = function(id) {
+            if (confirm('Weet je zeker dat je deze taak wilt verwijderen?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+            }
+        };
+
+        // Initialize
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        updateView();
+    </script>
+
+    <script src="main.js"></script>
+</body>
+</html> 
