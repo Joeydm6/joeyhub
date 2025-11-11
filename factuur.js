@@ -1,5 +1,108 @@
 // factuur.js
 
+// Templates (Joey/Carlo) configuratie en UI-selector
+const templates = {
+  Joey: {
+    naam: "JDM Holding B.V.",
+    infoRegels: [
+      "JDM Holding B.V.",
+      "Vinkenstraat 13",
+      "3136 HB Vlaardingen",
+      "joey@klassebv.nl",
+      "Tel: 0625300071",
+      "KvK: 80710484",
+      "BTW: NL861770031B01",
+      "Bank: NL37 RABO 0370 6868 29"
+    ],
+    logo: null
+  },
+  Carlo: {
+    naam: "Care Schilder en Behangwerk",
+    infoRegels: [
+      "Care Schilder en Behangwerk",
+      "Rivierstraat 109",
+      "6541 VJ Nijmegen",
+      "info@careschilderwerk.nl",
+      "Tel: 06 40 98 08 95",
+      "Website: careschilderwerk.nl"
+    ],
+    logo: "img/care-schilder-logo_Tekengebied 1 kopie 5.png"
+  }
+};
+
+let huidigeTemplate = "Joey";
+
+function setupTemplateSelector() {
+  const container = document.createElement("div");
+  container.id = "template-select-container";
+  container.style.display = "flex";
+  container.style.gap = "8px";
+  container.style.alignItems = "center";
+  container.style.marginBottom = "12px";
+  container.style.padding = "8px 12px";
+  container.style.borderBottom = "1px solid #e5e7eb";
+
+  const label = document.createElement("label");
+  label.htmlFor = "templateSelect";
+  label.textContent = "Template:";
+  label.style.fontWeight = "600";
+
+  const select = document.createElement("select");
+  select.id = "templateSelect";
+  ["Joey", "Carlo"].forEach((name) => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+  select.value = huidigeTemplate;
+  select.addEventListener("change", () => {
+    huidigeTemplate = select.value;
+    updateTemplateInfoBlock();
+  });
+
+  const infoBlock = document.createElement("div");
+  infoBlock.id = "template-info";
+  infoBlock.style.fontSize = "12px";
+  infoBlock.style.color = "#444";
+
+  container.appendChild(label);
+  container.appendChild(select);
+  container.appendChild(infoBlock);
+
+  // Plaats bovenaan de pagina
+  document.body.insertBefore(container, document.body.firstChild);
+  updateTemplateInfoBlock();
+}
+
+function updateTemplateInfoBlock() {
+  const block = document.getElementById("template-info");
+  if (!block) return;
+  const tpl = templates[huidigeTemplate];
+  block.innerHTML = `
+    <div><strong>${tpl.naam}</strong></div>
+    <div>${tpl.infoRegels.join("<br>")}</div>
+  `;
+}
+
+async function loadImageDataURL(src) {
+  try {
+    const res = await fetch(src);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", setupTemplateSelector);
+
+
 // Hulpfunctie om datum in DD/MM/JJJJ formaat te tonen
 function formatDate(dateString) {
     if (!dateString) return "";
@@ -79,12 +182,14 @@ function formatDate(dateString) {
   }
   
   // Genereer de factuur als PDF met behulp van jsPDF
-  function genereerPDF() {
+  async function genereerPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
   
     const marginX = 20, marginY = 20;
     const bedrijfsInfoX = 140;
+  
+    const tpl = templates[huidigeTemplate];
   
     // Ingevoerde factuurgegevens
     const factuurnummer = document.getElementById("factuurnummer").value || "";
@@ -97,9 +202,16 @@ function formatDate(dateString) {
       vervalDatumStr = formatDate(verval.toISOString().split("T")[0]);
     }
   
-    // Bedrijfsnaam als kop
+    // Bedrijfsnaam en (optioneel) logo
     doc.setFont("helvetica", "bold").setFontSize(22);
-    doc.text("JDM Holding B.V.", marginX, marginY);
+    if (tpl.logo) {
+      const logoData = await loadImageDataURL(tpl.logo);
+      if (logoData) {
+        // Plaats het logo linksboven (breedte 40mm, hoogte ~12mm)
+        doc.addImage(logoData, "PNG", marginX, marginY - 12, 40, 12);
+      }
+    }
+    doc.text(tpl.naam, marginX, marginY);
     doc.setFontSize(12);
   
     // Factuurgegevens (nummer, data)
@@ -107,7 +219,7 @@ function formatDate(dateString) {
     doc.text(`Factuurdatum: ${formatDate(factuurDatum)}`, marginX, marginY + 16);
     doc.text(`Vervaldatum: ${vervalDatumStr}`, marginX, marginY + 22);
   
-    // 🏷️ **Klantgegevens invoegen in het vak linksboven**
+    // Klantgegevens linksboven
     const klantNaam = document.getElementById("naam").value || "Klantnaam";
     const klantAdres = document.getElementById("adres").value || "Adres";
     const klantPostcode = document.getElementById("postcode").value || "Postcode";
@@ -118,13 +230,9 @@ function formatDate(dateString) {
     doc.text(klantAdres, marginX, marginY + 49);
     doc.text(`${klantPostcode} ${klantWoonplaats}`, marginX, marginY + 56);
   
-    // 📍 **Bedrijfsadres en info rechtsboven**
+    // Bedrijfsadres en info rechtsboven
     doc.setFont("helvetica", "normal").setFontSize(10);
-    const bedrijfsInfoRegels = [
-      "JDM Holding B.V.", "Vinkenstraat 13", "3136 HB Vlaardingen", 
-      "joey@klassebv.nl", "Tel: 0625300071", "KvK: 80710484", "BTW: NL861770031B01", 
-      "Bank: NL37 RABO 0370 6868 29"
-    ];
+    const bedrijfsInfoRegels = tpl.infoRegels;
     bedrijfsInfoRegels.forEach((text, i) => {
       doc.text(text, bedrijfsInfoX, marginY + i * 5);
     });
