@@ -22,57 +22,40 @@ const templates = {
       "Care Schilder en Behangwerk",
       "Rivierstraat 109",
       "6541 VJ Nijmegen",
-      "info@careschilderwerk.nl",
       "Tel: 06 40 98 08 95",
-      "Website: careschilderwerk.nl"
+      "Email: info@careschilderwerk.nl",
+      "Website: careschilderwerk.nl",
+      "Bankrekeningnummer: NL19KNAB0776902342",
+      "Naam rekeninghouder: CTA Roelofs"
     ],
-    logo: "img/care-schilder-logo_Tekengebied 1 kopie 5.png"
+    logo: "../img/care-schilder-logo_Tekengebied 1 kopie 5.png"
   }
 };
 
 let huidigeTemplate = "Joey";
 
 function setupTemplateSelector() {
-  const container = document.createElement("div");
-  container.id = "template-select-container";
-  container.style.display = "flex";
-  container.style.gap = "8px";
-  container.style.alignItems = "center";
-  container.style.marginBottom = "12px";
-  container.style.padding = "8px 12px";
-  container.style.borderBottom = "1px solid #e5e7eb";
+  const segment = document.getElementById("template-segment");
+  const indicator = document.getElementById("segment-indicator");
+  if (!segment || !indicator) {
+    // Zonder UI: default op Joey
+    huidigeTemplate = "Joey";
+    return;
+  }
 
-  const label = document.createElement("label");
-  label.htmlFor = "templateSelect";
-  label.textContent = "Template:";
-  label.style.fontWeight = "600";
+  const buttons = segment.querySelectorAll("button[data-template]");
+  // Init
+  huidigeTemplate = "Joey";
+  indicator.style.transform = "translateX(0%)";
 
-  const select = document.createElement("select");
-  select.id = "templateSelect";
-  ["Joey", "Carlo"].forEach((name) => {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    select.appendChild(opt);
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const sel = btn.getAttribute("data-template");
+      if (!sel || !templates[sel]) return;
+      huidigeTemplate = sel;
+      indicator.style.transform = sel === "Carlo" ? "translateX(100%)" : "translateX(0%)";
+    });
   });
-  select.value = huidigeTemplate;
-  select.addEventListener("change", () => {
-    huidigeTemplate = select.value;
-    updateTemplateInfoBlock();
-  });
-
-  const infoBlock = document.createElement("div");
-  infoBlock.id = "template-info";
-  infoBlock.style.fontSize = "12px";
-  infoBlock.style.color = "#444";
-
-  container.appendChild(label);
-  container.appendChild(select);
-  container.appendChild(infoBlock);
-
-  // Plaats bovenaan de pagina
-  document.body.insertBefore(container, document.body.firstChild);
-  updateTemplateInfoBlock();
 }
 
 function updateTemplateInfoBlock() {
@@ -98,6 +81,15 @@ async function loadImageDataURL(src) {
   } catch (e) {
     return null;
   }
+}
+
+// Hulpfunctie om afmetingen van een base64-afbeelding te bepalen
+async function getImageDimensions(dataURL) {
+  return await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height });
+    img.src = dataURL;
+  });
 }
 
 document.addEventListener("DOMContentLoaded", setupTemplateSelector);
@@ -186,6 +178,7 @@ function formatDate(dateString) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
   
+    const pageWidth = doc.internal.pageSize.getWidth();
     const marginX = 20, marginY = 20;
     const bedrijfsInfoX = 140;
   
@@ -204,20 +197,28 @@ function formatDate(dateString) {
   
     // Bedrijfsnaam en (optioneel) logo
     doc.setFont("helvetica", "bold").setFontSize(22);
+    let headerStartY = marginY;
     if (tpl.logo) {
       const logoData = await loadImageDataURL(tpl.logo);
       if (logoData) {
-        // Plaats het logo linksboven (breedte 40mm, hoogte ~12mm)
-        doc.addImage(logoData, "PNG", marginX, marginY - 12, 40, 12);
+        // Schaal logo proportioneel en plaats LINKS boven
+        const dims = await getImageDimensions(logoData);
+        const targetW = 70; // mm (groter en breder)
+        const targetH = Math.max(24, (dims.height / dims.width) * targetW);
+        const logoX = marginX;
+        const logoY = marginY;
+        doc.addImage(logoData, "PNG", logoX, logoY, targetW, targetH);
+        headerStartY = logoY + targetH + 12; // extra ruimte onder het logo
       }
     }
-    doc.text(tpl.naam, marginX, marginY);
+    doc.text(tpl.naam, marginX, headerStartY);
     doc.setFontSize(12);
   
-    // Factuurgegevens (nummer, data)
-    doc.text(`Factuurnummer: ${factuurnummer}`, marginX, marginY + 10);
-    doc.text(`Factuurdatum: ${formatDate(factuurDatum)}`, marginX, marginY + 16);
-    doc.text(`Vervaldatum: ${vervalDatumStr}`, marginX, marginY + 22);
+    // Factuurgegevens (nummer, data) onder de header
+    const lh = 6;
+    doc.text(`Factuurnummer: ${factuurnummer}`, marginX, headerStartY + 10);
+    doc.text(`Factuurdatum: ${formatDate(factuurDatum)}`, marginX, headerStartY + 10 + lh);
+    doc.text(`Vervaldatum: ${vervalDatumStr}`, marginX, headerStartY + 10 + 2 * lh);
   
     // Klantgegevens linksboven
     const klantNaam = document.getElementById("naam").value || "Klantnaam";
@@ -225,20 +226,38 @@ function formatDate(dateString) {
     const klantPostcode = document.getElementById("postcode").value || "Postcode";
     const klantWoonplaats = document.getElementById("woonplaats").value || "Woonplaats";
   
-    doc.setFont("helvetica", "normal").setFontSize(12);
-    doc.text(klantNaam, marginX, marginY + 42);
-    doc.text(klantAdres, marginX, marginY + 49);
-    doc.text(`${klantPostcode} ${klantWoonplaats}`, marginX, marginY + 56);
-  
-    // Bedrijfsadres en info rechtsboven
+    // Bedrijfsadres en info rechts (start onder het logo)
     doc.setFont("helvetica", "normal").setFontSize(10);
     const bedrijfsInfoRegels = tpl.infoRegels;
-    bedrijfsInfoRegels.forEach((text, i) => {
-      doc.text(text, bedrijfsInfoX, marginY + i * 5);
+    let infoY = headerStartY;
+    const maxInfoWidth = pageWidth - bedrijfsInfoX - marginX;
+    bedrijfsInfoRegels.forEach((text) => {
+      if (/^Naam rekeninghouder:/i.test(text)) {
+        // Forceer op één regel
+        doc.text(text, bedrijfsInfoX, infoY);
+        infoY += 5;
+        return;
+      }
+      const wrapped = doc.splitTextToSize(text, Math.max(40, maxInfoWidth));
+      wrapped.forEach((line) => {
+        doc.text(line, bedrijfsInfoX, infoY);
+        infoY += 5;
+      });
+      if (/Website:/i.test(text)) {
+        infoY += 5; // Eén extra enter na Website
+      }
     });
   
+    // Klantgegevens links, starten onder de hoogste header (links/rechts)
+    const headerTextBottomY = headerStartY + 10 + 2 * lh; // na de factuurregels
+    const afterHeaderY = Math.max(headerTextBottomY, infoY) + 12;
+    doc.setFont("helvetica", "normal").setFontSize(12);
+    doc.text(klantNaam, marginX, afterHeaderY);
+    doc.text(klantAdres, marginX, afterHeaderY + 7);
+    doc.text(`${klantPostcode} ${klantWoonplaats}`, marginX, afterHeaderY + 14);
+  
     // Tabelkop voor factuurregels
-    let tabelStartY = 100;
+    let tabelStartY = afterHeaderY + 32;
     doc.setFont("helvetica", "bold");
     doc.text("Omschrijving", marginX, tabelStartY);
     doc.text("Prijs", 100, tabelStartY);
