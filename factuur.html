@@ -36,12 +36,12 @@
   </header>
 
   <!-- Factuur Generator Interface -->
-  <div class="flex justify-center items-center min-h-screen p-4">
-    <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-full max-w-xl">
-      <h2 class="text-2xl font-bold text-green-400 mb-4">Factuur Generator</h2>
+  <div class="flex justify-center items-center min-h-[80vh] p-3">
+    <div class="bg-gray-800 p-4 rounded-lg shadow-lg text-center w-full max-w-xl">
+      <h2 class="text-2xl font-bold text-green-400 mb-3">Factuur Generator</h2>
 
       <!-- Template segment-knop -->
-      <div id="template-controls" class="mb-4">
+      <div id="template-controls" class="mb-3">
         <div id="template-segment" class="relative flex bg-gray-700 rounded-full overflow-hidden w-full max-w-xs mx-auto">
           <span id="segment-indicator" class="absolute inset-y-0 left-0 w-1/2 bg-green-500 transition-transform transform translate-x-0 rounded-full"></span>
           <button type="button" data-template="Joey" class="relative z-10 flex-1 py-2 text-sm text-white">Joey</button>
@@ -50,20 +50,20 @@
       </div>
 
       <!-- Dummygegevens knop -->
-      <button onclick="vulDummyGegevens()" class="w-full bg-yellow-400 text-gray-900 p-3 rounded-md font-semibold mb-4">
+      <button onclick="vulDummyGegevens()" class="w-full bg-yellow-400 text-gray-900 p-2 rounded-md font-semibold mb-3">
         Vul Dummygegevens in
       </button>
 
       <!-- Klantgegevens invoer -->
-      <input type="text" id="naam" placeholder="Klantnaam" class="w-full p-3 mb-2 text-gray-900 rounded-md" />
-      <input type="text" id="adres" placeholder="Adres" class="w-full p-3 mb-2 text-gray-900 rounded-md" />
-      <input type="text" id="postcode" placeholder="Postcode" class="w-full p-3 mb-2 text-gray-900 rounded-md" />
-      <input type="text" id="woonplaats" placeholder="Woonplaats" class="w-full p-3 mb-2 text-gray-900 rounded-md" />
-      <input type="text" id="factuurnummer" placeholder="Factuurnummer" class="w-full p-3 mb-2 text-gray-900 rounded-md" />
-      <input type="date" id="datum" class="w-full p-3 mb-4 text-gray-900 rounded-md" />
+      <input type="text" id="naam" placeholder="Klantnaam" class="w-full p-2 mb-2 text-gray-900 rounded-md" />
+      <input type="text" id="adres" placeholder="Adres" class="w-full p-2 mb-2 text-gray-900 rounded-md" />
+      <input type="text" id="postcode" placeholder="Postcode" class="w-full p-2 mb-2 text-gray-900 rounded-md" />
+      <input type="text" id="woonplaats" placeholder="Woonplaats" class="w-full p-2 mb-2 text-gray-900 rounded-md" />
+      <input type="text" id="factuurnummer" placeholder="Factuurnummer" class="w-full p-2 mb-2 text-gray-900 rounded-md" />
+      <input type="date" id="datum" class="w-full p-2 mb-3 text-gray-900 rounded-md" />
 
       <!-- Tabel met factuurregels -->
-      <table class="w-full text-white mb-4 border border-gray-700 text-sm">
+      <table class="w-full text-white mb-3 border border-gray-700 text-sm">
         <thead>
           <tr class="bg-gray-700">
             <th class="p-2 border border-gray-600">Beschrijving</th>
@@ -76,17 +76,27 @@
           <!-- factuurregels worden hier dynamisch toegevoegd -->
         </tbody>
       </table>
-      <button onclick="voegItemToe()" class="w-full bg-green-500 text-gray-900 p-2 rounded-md font-semibold mb-4">+ Voeg item toe</button>
+      <button onclick="voegItemToe()" class="w-full bg-green-500 text-gray-900 p-2 rounded-md font-semibold mb-3">+ Voeg item toe</button>
 
       <!-- Totaaloverzicht -->
-      <div class="text-right mb-4 text-gray-200">
+      <div class="text-right mb-3 text-gray-200">
         <p>Subtotaal: <span id="subtotaal">0.00</span> EUR</p>
-        <p>BTW (21%): <span id="btw">0.00</span> EUR</p>
+        <p>BTW (<span id="btw-label">21%</span>): <span id="btw">0.00</span> EUR</p>
         <p class="text-lg font-bold">Totaal: <span id="totaal">0.00</span> EUR</p>
       </div>
 
+      <!-- BTW selectie (alleen voor Carlo) -->
+      <div id="carlo-btw-container" class="mb-3 hidden text-left">
+        <label for="carlo-btw-select" class="block text-sm text-gray-300 mb-1">BTW voor Carlo:</label>
+        <select id="carlo-btw-select" class="w-full p-2 rounded-md text-gray-900">
+          <option value="21">21%</option>
+          <option value="9">9%</option>
+          <option value="verlegd">BTW verlegd</option>
+        </select>
+      </div>
+
       <!-- Download PDF knop -->
-      <button onclick="genereerPDF()" class="w-full bg-blue-500 text-white p-3 rounded-md font-semibold">Download Factuur als PDF</button>
+      <button onclick="genereerPDF()" class="w-full bg-blue-500 text-white p-2 rounded-md font-semibold">Download Factuur als PDF</button>
     </div>
   </div>
 
