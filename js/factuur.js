@@ -37,8 +37,6 @@ let huidigeTemplate = "Joey";
 function setupTemplateSelector() {
   const segment = document.getElementById("template-segment");
   const indicator = document.getElementById("segment-indicator");
-  const carloBtwContainer = document.getElementById("carlo-btw-container");
-  const carloBtwSelect = document.getElementById("carlo-btw-select");
   const btwLabelEl = document.getElementById("btw-label");
   if (!segment || !indicator) {
     // Zonder UI: default op Joey
@@ -50,19 +48,8 @@ function setupTemplateSelector() {
   // Init
   huidigeTemplate = "Joey";
   indicator.style.transform = "translateX(0%)";
-
-  const updateBtwVisibility = () => {
-    if (huidigeTemplate === "Carlo") {
-      carloBtwContainer?.classList.remove("hidden");
-      const mode = carloBtwSelect?.value || "21";
-      btwLabelEl && (btwLabelEl.innerText = mode === "verlegd" ? "verlegd" : `${mode}%`);
-    } else {
-      carloBtwContainer?.classList.add("hidden");
-      if (carloBtwSelect) carloBtwSelect.value = "21";
-      btwLabelEl && (btwLabelEl.innerText = "21%");
-    }
-    berekenTotaal();
-  };
+  // BTW-label staat nu altijd op 'mix' omdat BTW per item wordt ingesteld
+  btwLabelEl && (btwLabelEl.innerText = "mix");
 
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -70,17 +57,13 @@ function setupTemplateSelector() {
       if (!sel || !templates[sel]) return;
       huidigeTemplate = sel;
       indicator.style.transform = sel === "Carlo" ? "translateX(100%)" : "translateX(0%)";
-      updateBtwVisibility();
+      // Template wissel heeft geen invloed op BTW: per item ingesteld
+      btwLabelEl && (btwLabelEl.innerText = "mix");
+      berekenTotaal();
     });
   });
-
-  carloBtwSelect?.addEventListener("change", () => {
-    btwLabelEl && (btwLabelEl.innerText = carloBtwSelect.value === "verlegd" ? "verlegd" : `${carloBtwSelect.value}%`);
-    berekenTotaal();
-  });
-
-  // Initialiseer zichtbaarheid en label
-  updateBtwVisibility();
+  // Initialiseer label
+  berekenTotaal();
 }
 
 function updateTemplateInfoBlock() {
@@ -149,12 +132,28 @@ function formatDate(dateString) {
         <td><input type="text" class="beschrijving w-full p-2 text-gray-900" value="Website ontwerp" /></td>
         <td><input type="number" class="prijs w-full p-2 text-gray-900" value="500" oninput="berekenTotaal()" /></td>
         <td><input type="number" class="aantal w-full p-2 text-gray-900" value="1" oninput="berekenTotaal()" /></td>
+        <td>
+          <select class="btw w-full p-2 text-gray-900" onchange="berekenTotaal()">
+            <option value="21" selected>21%</option>
+            <option value="9">9%</option>
+            <option value="0">0%</option>
+            <option value="verlegd">verlegd</option>
+          </select>
+        </td>
         <td><button class="text-red-500 font-bold" onclick="verwijderItem(this)">✖</button></td>
       </tr>
       <tr>
         <td><input type="text" class="beschrijving w-full p-2 text-gray-900" value="SEO optimalisatie" /></td>
         <td><input type="number" class="prijs w-full p-2 text-gray-900" value="200" oninput="berekenTotaal()" /></td>
         <td><input type="number" class="aantal w-full p-2 text-gray-900" value="2" oninput="berekenTotaal()" /></td>
+        <td>
+          <select class="btw w-full p-2 text-gray-900" onchange="berekenTotaal()">
+            <option value="21">21%</option>
+            <option value="9" selected>9%</option>
+            <option value="0">0%</option>
+            <option value="verlegd">verlegd</option>
+          </select>
+        </td>
         <td><button class="text-red-500 font-bold" onclick="verwijderItem(this)">✖</button></td>
       </tr>
     `;
@@ -169,6 +168,14 @@ function formatDate(dateString) {
       <td><input type="text" class="beschrijving w-full p-2 text-gray-900" oninput="berekenTotaal()" /></td>
       <td><input type="number" class="prijs w-full p-2 text-gray-900" value="0" oninput="berekenTotaal()" /></td>
       <td><input type="number" class="aantal w-full p-2 text-gray-900" value="1" oninput="berekenTotaal()" /></td>
+      <td>
+        <select class="btw w-full p-2 text-gray-900" onchange="berekenTotaal()">
+          <option value="21" selected>21%</option>
+          <option value="9">9%</option>
+          <option value="0">0%</option>
+          <option value="verlegd">verlegd</option>
+        </select>
+      </td>
       <td><button class="text-red-500 font-bold" onclick="verwijderItem(this)">✖</button></td>
     `;
     tbody.appendChild(row);
@@ -186,18 +193,21 @@ function formatDate(dateString) {
   // Bereken subtotaal, BTW en totaal op basis van ingevulde regels
   function berekenTotaal() {
     let subtotaal = 0;
+    let btwTotaal = 0;
     document.querySelectorAll("#factuur-items tr").forEach(row => {
       const prijs = parseFloat(row.querySelector(".prijs")?.value) || 0;
       const aantal = parseInt(row.querySelector(".aantal")?.value) || 0;
-      subtotaal += prijs * aantal;
+      const rijSub = prijs * aantal;
+      subtotaal += rijSub;
+      const btwVal = row.querySelector(".btw")?.value || "21";
+      const perc = btwVal === "verlegd" ? 0 : (parseFloat(btwVal) || 0) / 100;
+      btwTotaal += rijSub * perc;
     });
-    // BTW percentage afhankelijk van template (Carlo: 21, 9 of verlegd)
-    const mode = (huidigeTemplate === "Carlo") ? (document.getElementById("carlo-btw-select")?.value || "21") : "21";
-    const btwPercentage = mode === "21" ? 0.21 : mode === "9" ? 0.09 : 0;
-    const btwBedrag = subtotaal * btwPercentage;
-    const totaalBedrag = subtotaal + btwBedrag;
+    const totaalBedrag = subtotaal + btwTotaal;
+    const lbl = document.getElementById("btw-label");
+    if (lbl) lbl.innerText = "mix";
     document.getElementById("subtotaal").innerText = subtotaal.toFixed(2);
-    document.getElementById("btw").innerText = btwBedrag.toFixed(2);
+    document.getElementById("btw").innerText = btwTotaal.toFixed(2);
     document.getElementById("totaal").innerText = totaalBedrag.toFixed(2);
   }
   
@@ -284,16 +294,18 @@ function formatDate(dateString) {
     doc.text(klantAdres, marginX, afterHeaderY + 7);
     doc.text(`${klantPostcode} ${klantWoonplaats}`, marginX, afterHeaderY + 14);
   
-    // Tabelkop voor factuurregels (kolommen strak uitgelijnd)
+    // Tabelkop voor factuurregels (kolommen): Omschrijving | Prijs | Aantal | BTW% | BTW | Totaal
     let tabelStartY = afterHeaderY + 28;
-    const colPrijsX = 100;
-    const colAantalX = 130;
-    const colBtwX = 160;
+    const colPrijsX = 95;
+    const colAantalX = 120;
+    const colBtwPercX = 145;
+    const colBtwX = 170;
     const colTotaalX = 200;
     doc.setFont("helvetica", "bold");
     doc.text("Omschrijving", marginX, tabelStartY);
     doc.text("Prijs", colPrijsX, tabelStartY, { align: "right" });
     doc.text("Aantal", colAantalX, tabelStartY, { align: "right" });
+    doc.text("BTW%", colBtwPercX, tabelStartY, { align: "right" });
     doc.text("BTW", colBtwX, tabelStartY, { align: "right" });
     doc.text("Totaal", colTotaalX, tabelStartY, { align: "right" });
     doc.setLineWidth(0.5);
@@ -303,34 +315,39 @@ function formatDate(dateString) {
     // Factuurregels invullen
     let positieY = tabelStartY + 10;
     let subtotaal = 0;
-    const mode = (huidigeTemplate === "Carlo") ? (document.getElementById("carlo-btw-select")?.value || "21") : "21";
-    const btwPercentage = mode === "21" ? 0.21 : mode === "9" ? 0.09 : 0;
+    let btwTotaal = 0;
+    let heeftVerlegd = false;
     document.querySelectorAll("#factuur-items tr").forEach(row => {
       const beschrijving = row.querySelector(".beschrijving")?.value || "";
       const prijs = parseFloat(row.querySelector(".prijs")?.value) || 0;
       const aantal = parseInt(row.querySelector(".aantal")?.value) || 0;
-      const totaal = prijs * aantal;
-      subtotaal += totaal;
+      const rijSub = prijs * aantal;
+      const btwVal = row.querySelector(".btw")?.value || "21";
+      const percNum = btwVal === "verlegd" ? 0 : (parseFloat(btwVal) || 0) / 100;
+      const btwBedrag = rijSub * percNum;
+      subtotaal += rijSub;
+      btwTotaal += btwBedrag;
+      if (btwVal === "verlegd") heeftVerlegd = true;
+
       // Regel invullen
       doc.text(beschrijving, marginX, positieY);
       doc.text(prijs.toFixed(2), colPrijsX, positieY, { align: "right" });
       doc.text(String(aantal), colAantalX, positieY, { align: "right" });
-      const btwBedragStr = (totaal * btwPercentage).toFixed(2);
-      const btwLabelStr = (mode === "verlegd") ? "" : ` (${mode}%)`;
-      doc.text(`${btwBedragStr}${btwLabelStr}`, colBtwX, positieY, { align: "right" });
-      doc.text(totaal.toFixed(2), colTotaalX, positieY, { align: "right" });
+      const rateLabel = (btwVal === "verlegd") ? "verlegd" : `${btwVal}%`;
+      doc.text(rateLabel, colBtwPercX, positieY, { align: "right" });
+      doc.text(btwBedrag.toFixed(2), colBtwX, positieY, { align: "right" });
+      doc.text(rijSub.toFixed(2), colTotaalX, positieY, { align: "right" });
       positieY += 8;
     });
-  
+
     // Totaalbedragen onder de tabel
-    const btwTotaal = subtotaal * btwPercentage;
     const totaalBedrag = subtotaal + btwTotaal;
     doc.setFont("helvetica", "bold");
     doc.text("Totaal (EUR):", 140, positieY + 10);
     doc.text(totaalBedrag.toFixed(2), colTotaalX, positieY + 10, { align: "right" });
-    if (mode === "verlegd") {
+    if (heeftVerlegd) {
       doc.setFont("helvetica", "italic").setFontSize(10);
-      doc.text("BTW verlegd", marginX, positieY + 18);
+      doc.text("BTW verlegd toegepast op bepaalde items", marginX, positieY + 18);
       doc.setFont("helvetica", "normal").setFontSize(12);
     }
   

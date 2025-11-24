@@ -69,6 +69,7 @@
             <th class="p-2 border border-gray-600">Beschrijving</th>
             <th class="p-2 border border-gray-600">Prijs</th>
             <th class="p-2 border border-gray-600">Aantal</th>
+            <th class="p-2 border border-gray-600">BTW</th>
             <th class="p-2 border border-gray-600">Verwijder</th>
           </tr>
         </thead>
@@ -81,19 +82,12 @@
       <!-- Totaaloverzicht -->
       <div class="text-right mb-3 text-gray-200">
         <p>Subtotaal: <span id="subtotaal">0.00</span> EUR</p>
-        <p>BTW (<span id="btw-label">21%</span>): <span id="btw">0.00</span> EUR</p>
+        <p>BTW (<span id="btw-label">mix</span>): <span id="btw">0.00</span> EUR</p>
         <p class="text-lg font-bold">Totaal: <span id="totaal">0.00</span> EUR</p>
       </div>
 
       <!-- BTW selectie (alleen voor Carlo) -->
-      <div id="carlo-btw-container" class="mb-3 hidden text-left">
-        <label for="carlo-btw-select" class="block text-sm text-gray-300 mb-1">BTW voor Carlo:</label>
-        <select id="carlo-btw-select" class="w-full p-2 rounded-md text-gray-900">
-          <option value="21">21%</option>
-          <option value="9">9%</option>
-          <option value="verlegd">BTW verlegd</option>
-        </select>
-      </div>
+      
 
       <!-- Download PDF knop -->
       <button onclick="genereerPDF()" class="w-full bg-blue-500 text-white p-2 rounded-md font-semibold">Download Factuur als PDF</button>
@@ -101,7 +95,7 @@
   </div>
 
   <!-- Koppel externe script voor factuur functionaliteit -->
-  <script src="../js/factuur.js"></script>
+  <script src="js/factuur.js"></script>
 
   <!-- Menu script (hamburger + active link) -->
   <script>
