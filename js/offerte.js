@@ -106,13 +106,12 @@ function formatDate(dateString) {
 function applyTekstTemplate(type) {
   const area = document.getElementById("offerte-tekst");
   if (!area) return;
-  const templates = {
-    schilder: "Geachte klant,\n\nHierbij bieden wij onze schilderdiensten aan. Deze offerte omvat het zorgvuldig schuren, voorbehandelen en afwerken van de te schilderen oppervlakken met hoogwaardige materialen. Wij streven naar een strak en duurzaam resultaat.\n\nOnderstaande specificatie geeft een uitsplitsing van werkzaamheden en kosten.",
-    webdesign: "Beste klant,\n\nDank voor de interesse in onze webdesign diensten. In deze offerte beschrijven wij het ontwerp, de ontwikkeling en oplevering van een moderne, responsieve website inclusief basis SEO.\n\nHieronder vindt u de specificaties en bijbehorende kosten.",
-    seo: "Beste,\n\nMet deze offerte stellen wij een traject voor om uw online vindbaarheid te verbeteren middels technische optimalisaties, contentverbeteringen en linkbuilding.\n\nDe onderstaande posten vormen de raming van werkzaamheden en kosten.",
-    algemeen: "Geachte heer/mevrouw,\n\nHierbij treft u onze offerte aan voor de gevraagde werkzaamheden. Wij werken transparant en leveren kwaliteit met oog voor detail.\n\nOnderstaand vindt u een specificatie van de onderdelen en kosten."
+  const templatesMap = {
+    schilderwerk: `Hierbij ontvangt u onze offerte voor het uitvoeren van schilderwerk aan de binnen- en buitenzijde. Voor een duurzaam en strak eindresultaat werken wij volgens een vaste werkwijze: het houtwerk wordt eerst gereinigd met een biologisch afbreekbaar reinigingsmiddel, daarna grondig geschuurd en volledig nagelopen op eventuele reparaties. Waar nodig wordt het houtwerk (over)gegrond en worden houtwerk en beglazing netjes afgekit met hoogwaardige beglazingskit. Tot slot lakken wij het geheel af voor een nette, slijtvaste afwerking. Bij alle werkzaamheden gebruiken wij uitsluitend kwaliteitsproducten. Let op: houtrot is niet inbegrepen en wordt, indien aanwezig, als stelpost behandeld.`,
+    wanden: `Hierbij ontvangt u onze offerte voor de afwerking van wanden en plafonds. Om een strak en egaal resultaat te garanderen, worden ondergronden zorgvuldig voorbereid: nieuw stucwerk wordt éénmalig voorzien van een dekkende primer en kleine reparaties worden nagelopen en bijgewerkt. Vervolgens kitten wij de inwendige en uitwendige hoeken en de aansluitingen bij kozijnen netjes af. Als eindafwerking brengen wij een hoogwaardige, afwasbare latex aan voor een duurzaam en goed reinigbaar resultaat.`,
+    renovlies: `Hierbij ontvangt u onze offerte voor het aanbrengen van renovlies en de complete afwerking van de wanden. Voor een glad en strak eindbeeld worden de muren eerst grondig geschuurd en nalopen wij de wanden op kleine reparaties, die waar nodig worden hersteld. Vervolgens brengen wij renovlies (150 grams) aan. Na het aanbrengen werken wij alle randen, inwendige en uitwendige hoeken en de aansluitingen bij ramen en kozijnen netjes af met kit. Tot slot werken wij het geheel af met een hoogwaardige, afwasbare latex voor een sterke en nette eindlaag.`
   };
-  area.value = templates[type] || "";
+  area.value = templatesMap[type] || "";
 }
 
 function vulDummyGegevens() {
@@ -131,7 +130,7 @@ function vulDummyGegevens() {
   }
   const area = document.getElementById("offerte-tekst");
   if (area) {
-    applyTekstTemplate("algemeen");
+    applyTekstTemplate("schilderwerk");
   }
   document.getElementById("factuur-items").innerHTML = `
     <tr>
@@ -369,4 +368,3 @@ async function genereerPDF() {
   // PDF opslaan
   doc.save(`Offerte_${offertenummer || 'export'}.pdf`);
 }
-
